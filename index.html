@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dispositivo di negoziazione</title>
+<meta name="description" content="Console multispecie: otto verbi, Homo sapiens e Canis lupus, su una tavola a matrice reale dell'Alta Lessinia">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- IBM Plex Mono per l'interfaccia; Newsreader resta per le scritte della mappa -->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <div class="title">
+        <h1>Dispositivo di negoziazione</h1>
+        <span class="sub">Seduta aperta · Alta Lessinia · risulta assente <i>Canis lupus</i></span>
+      </div>
+      <div class="buttons">
+        <button id="btn-reset" type="button" title="tasto R">reset</button>
+      </div>
+    </header>
+
+    <main id="map-wrap">
+      <canvas id="map" aria-label="Tavola a matrice dell'Alta Lessinia: trascina per spostarti, rotellina o pizzico per lo zoom"></canvas>
+      <div id="tooltip" class="tooltip" hidden></div>
+
+      <!-- legenda: da chiusa è solo una linguetta sul bordo sinistro della mappa -->
+      <button id="leg-apri" class="leg-linguetta" type="button" aria-expanded="false" aria-controls="leg-pannello" title="Legenda (tasto L)">Legenda</button>
+      <aside id="leg-pannello" class="leg-pannello" aria-label="Legenda e livelli">
+        <div class="leg-testa">
+          <span>Legenda</span>
+          <button id="leg-chiudi" type="button" aria-label="Chiudi la legenda">×</button>
+        </div>
+        <p class="leg-nota">Spunta un gruppo per mostrarlo o nasconderlo sulla mappa.</p>
+        <div id="legenda"></div>
+        <p class="hint">1–8 livelli · L legenda · + − zoom · 0 adatta · R reset · D debug · F schermo intero</p>
+      </aside>
+
+      <div class="map-comandi" role="group" aria-label="Zoom della mappa">
+        <button type="button" data-zoom="piu" aria-label="Avvicina" title="Avvicina (+)">+</button>
+        <button type="button" data-zoom="meno" aria-label="Allontana" title="Allontana (−)">−</button>
+        <button type="button" data-zoom="adatta" title="Riempi la sezione (0)">adatta</button>
+        <button type="button" data-zoom="intera" title="Mostra tutta la tavola">intera</button>
+      </div>
+      <div class="map-scala" aria-hidden="true"><span class="map-scala-barra"></span><span class="map-scala-km"></span></div>
+    </main>
+
+    <aside id="side">
+      <section id="bilancio" aria-label="Bilancio dei bisogni"></section>
+      <!-- qui ui.js inserisce il registro delle risposte (cronologia della negoziazione) -->
+    </aside>
+
+    <!-- fascia degli slider: in installazione andrà su uno schermo a parte, sotto -->
+    <section id="console" aria-label="Console degli slider"></section>
+  </div>
+
+  <div id="debug" hidden>
+    <div class="debug-head">DEBUG <span>(D per chiudere)</span></div>
+    <pre id="debug-text"></pre>
+    <div class="debug-dev">
+      <button id="btn-midi" type="button">collega MIDI</button>
+      <button id="btn-serial" type="button">collega seriale</button>
+      <div id="dev-status"></div>
+    </div>
+  </div>
+
+  <script src="data/lessinia.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/territory.js"></script>
+  <script src="js/corridors.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
