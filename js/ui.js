@@ -1,471 +1,354 @@
 /* =====================================================================
-   UI — console degli slider, bilancio dei bisogni, livelli, legenda,
-   suggerimenti sui nodi, modalità debug.
+   UI — pannello destro della tavola (NECESSITÀ, CONFLITTI), verbale,
+   schede sulla mappa, tasti, debug.
+   Tutto il pannello è disegnato nell'SVG #carta sulle coordinate del
+   riferimento (2576 × 1449): i numeri qui sotto sono misurati sull'immagine.
+   Gli slider sono in console.html: qui si leggono soltanto.
    ===================================================================== */
 (function (DN) {
   'use strict';
   const U = DN.util;
+  const NS = 'http://www.w3.org/2000/svg';
 
-  const BISOGNI = [
-    { id: 'cibo', nome: 'Cibo' },
-    { id: 'spazio', nome: 'Spazio' },
-    { id: 'sicurezza', nome: 'Incolumità' },
-    { id: 'discendenza', nome: 'Discendenza' }
+  /* ---------------- geometria del pannello (unità del riferimento) ------- */
+  // fattori del territorio (calcolaStato) in alto: lato Homo sapiens
+  const TAG_SU = [
+    { t: 'Cani da guardiania', v: 'cani',           x: 1724, y: 227, w: 177, s: 1841 },
+    { t: 'Infrastrutture',     v: 'infrastrutture', x: 1931, y: 227, w: 171, s: 1969 },
+    { t: 'Pascolo',            v: 'pascolo',        x: 1724, y: 275, w: 107, s: 1777 },
+    { t: 'Greggi',             v: 'greggi',         x: 1854, y: 275, w: 104, s: 1908 },
+    { t: 'Conflitti',          v: 'conflitto',      x: 1980, y: 275, w: 122, s: 2037 }
   ];
+  // in basso: lato Canis lupus
+  const TAG_GIU = [
+    { t: 'Ungulati',        v: 'ungulati',            x: 1724, y: 681, w: 89,  s: 1769 },
+    { t: 'Corridoi',        v: 'corridoiAperti',      x: 1826, y: 681, w: 100, s: 1877 },
+    { t: 'Lupi',            v: 'lupi',                x: 1939, y: 681, w: 67,  s: 1973 },
+    { t: 'Boschi',          v: 'bosco',               x: 2019, y: 681, w: 84,  s: 2060 },
+    { t: 'Ibridazione',     v: 'ibridazione',         x: 1724, y: 729, w: 108, s: 1820 },
+    { t: 'Morti in strada', v: 'mortalitaStradale',   x: 1845, y: 729, w: 136, s: 1933 },
+    { t: 'Dispersione',     v: 'dispersioneRiuscita', x: 1994, y: 729, w: 108, s: 2013 }
+  ];
+  const VERBI = [
+    { id: 'abbattere',   x: 2136, y: 228, alto: true },
+    { id: 'proteggere',  x: 2342, y: 227, alto: true },
+    { id: 'costruire',   x: 2136, y: 275, alto: true },
+    { id: 'allevare',    x: 2342, y: 275, alto: true },
+    { id: 'predare',     x: 2136, y: 682, alto: false },
+    { id: 'disperdersi', x: 2342, y: 681, alto: false },
+    { id: 'avvicinarsi', x: 2136, y: 729, alto: false },
+    { id: 'fareBranco',  x: 2342, y: 729, alto: false }
+  ];
+  const H_SCATOLA = 35;
+  const QUADRANTI = [
+    { id: 'cibo',        nome: 'Risorse',  cx: 1808 },
+    { id: 'spazio',      nome: 'Spazi',    cx: 2015 },
+    { id: 'sicurezza',   nome: 'Limiti',   cx: 2221 },
+    { id: 'discendenza', nome: 'Famiglia', cx: 2428 }
+  ];
+  const CY = 496, R_IN = 61, R_OUT = 81, TACCHE = 15;
+  // fili dello schema: [x1, y1, x2, y2]
+  const FILI = [
+    [1901, 244.6, 1931, 244.6], [2307, 244.6, 2342, 244.6], [2325, 244.6, 2325, 375.5],
+    [1777, 332.3, 2430, 332.3], [2430, 310, 2430, 332.3],
+    [1777, 310, 1777, 375.5], [1841, 262, 1841, 375.5], [1908, 310, 1908, 375.5],
+    [1969, 262, 1969, 375.5], [2037, 310, 2037, 375.5], [2221, 310, 2221, 375.5],
+    [1730, 375.5, 2350, 375.5],
+    [1730, 375.5, 1730, 420.5], [1937, 375.5, 1937, 420.5], [2143, 375.5, 2143, 420.5], [2350, 375.5, 2350, 420.5],
+    [1730, 572, 1730, 617], [1937, 572, 1937, 617], [2143, 572, 2143, 617], [2350, 572, 2350, 617],
+    [1730, 617, 2350, 617],
+    [1769, 617, 1769, 681], [1769, 660.6, 2433, 660.6], [2433, 660.6, 2433, 681],
+    [1820, 617, 1820, 729], [1877, 617, 1877, 681], [1933, 617, 1933, 729],
+    [1973, 617, 1973, 681], [2013, 617, 2013, 729], [2060, 617, 2060, 681],
+    [2221, 617, 2221, 682], [2325, 617, 2325, 747], [2307, 747, 2342, 747]
+  ];
+  // grafico dei conflitti
+  const GR = { x: 1724, y: 954, w: 600, h: 189, colonne: [1786.5, 1863.3, 1938.9, 2015.8, 2092.7, 2169.6, 2246.5], righe: [999.9, 1049.4, 1095.2] };
+  const BARRE = { x: 2207, passo: 17.1, w: 11.2, y: 841, h: 49, n: 18 };
 
-  const CAP_H = 40;   // altezza del cursore in px (come .fader-cap nel CSS)
+  // icona del verbale per slider che spinge
+  const ICONA_VERBALE = {
+    allevare: 's-pascolo-rischio', proteggere: 's-pascolo-rischio', predare: 's-bestiame', abbattere: 's-ucciso',
+    costruire: 's-conteso', disperdersi: 's-conteso', avvicinarsi: 's-trappola', fareBranco: 's-conteso'
+  };
+  const ICONA_EVENTO = { bestiame: 's-bestiame', ucciso: 's-ucciso', conteso: 's-conteso', trappola: 's-trappola' };
 
-  const el = (tag, cls, html) => {
-    const e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (html !== undefined) e.innerHTML = html;
+  const mk = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
     return e;
   };
+  const lerpColore = (a, b, t) => {
+    const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const A = p(a), B = p(b);
+    return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')';
+  };
+
+  /* testo con <i>…</i> → righe di frammenti {t, it}, a capo per numero di caratteri */
+  function righe(html, max, maxRighe) {
+    const parti = String(html).split(/(<i>|<\/i>)/);
+    const parole = [];
+    let it = false;
+    parti.forEach((p) => {
+      if (p === '<i>') { it = true; return; }
+      if (p === '</i>') { it = false; return; }
+      p.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').split(/(\s+)/).forEach((w) => {
+        if (!w) return;
+        if (/^\s+$/.test(w)) parole.push({ sp: true });
+        else parole.push({ t: w, it });
+      });
+    });
+    const out = [];
+    let riga = [], n = 0, spazio = false;
+    parole.forEach((w) => {
+      if (w.sp) { spazio = n > 0; return; }
+      const add = (spazio ? 1 : 0) + w.t.length;
+      if (n + add > max && n > 0) { out.push(riga); riga = []; n = 0; spazio = false; }
+      if (spazio && n > 0) { riga.push({ t: ' ', it: false }); n += 1; }
+      riga.push({ t: w.t, it: w.it }); n += w.t.length; spazio = false;
+    });
+    if (riga.length) out.push(riga);
+    if (maxRighe && out.length > maxRighe) {
+      out.length = maxRighe;
+      const ultima = out[maxRighe - 1];
+      ultima[ultima.length - 1] = Object.assign({}, ultima[ultima.length - 1], { t: ultima[ultima.length - 1].t.replace(/[.,:;]?$/, '…') });
+    }
+    return out;
+  }
+  function scriviRiga(textEl, frammenti) {
+    textEl.textContent = '';
+    frammenti.forEach((f) => {
+      const ts = mk('tspan', f.it ? { class: 'it' } : {}, textEl);
+      ts.textContent = f.t;
+    });
+  }
 
   class UI {
     constructor(app) {
       this.app = app;
       this.cfg = app.cfg;
       this.bus = app.bus;
-      this.faders = {};
-      this.baseline = null;
-      this.lastUserMove = -Infinity;
       this.debug = false;
       this._fps = { n: 0, t: performance.now(), v: 0 };
+      this.nomi = {}; this.slider = {};
+      this.cfg.SLIDERS.forEach((s) => { this.nomi[s.id] = s.nome; this.slider[s.id] = s; });
+      this.ultimoGesto = {};
+      this.verbale = [];          // frasi della negoziazione, la più recente per prima
+      this.verbaleChiavi = new Map();
+      this.dir = {}; this.prec = {};
+      this.cfg.SLIDERS.forEach((s) => { this.dir[s.id] = 1; this.prec[s.id] = 50; });
+      this.inst = 0; this.conf = 0;
 
-      this._buildConsole();
-      this._buildBilancio();
-      this._buildLegenda();
-      this._bindLegenda();
-      this._bindButtons();
+      this._buildPannello();
       this._bindMap();
       this._bindKeys();
+      this._bindButtons();
 
-      // registro delle risposte e linee "chi spinge chi"
-      this.registro = [];
-      this.registroChiavi = new Map();
-      this.inizioPresa = {};
-      this.ultimoGesto = {};
-      this.nomi = {};
-      this.slider = {};
-      this.cfg.SLIDERS.forEach((s) => { this.nomi[s.id] = s.nome; this.slider[s.id] = s; });
-
-      this.bus.on('hold', (id) => {
-        // la freccia mostra la variazione causata dall'ultimo movimento dell'utente:
-        // il riferimento si fissa quando la mano afferra uno slider libero
-        if (!this._tenendo) this.baseline = JSON.parse(JSON.stringify({ umano: app.sim.result.umano, lupo: app.sim.result.lupo }));
-        this._tenendo = true;
-        this.inizioPresa[id] = this.bus.values[id];
-      });
-      this.bus.on('release', (id) => {
-        this._tenendo = this.bus.anyHeld();
-        const da = this.inizioPresa[id], a = this.bus.values[id];
-        if (da !== undefined && Math.abs(a - da) >= 2) {
-          this._scrivi('mano', `<b>${this.nomi[id]}</b> ${this._verso(id, a > da)} · ${Math.round(a)} <span>Posizione depositata. Le altre voci rispondono.</span>`);
-        }
-        delete this.inizioPresa[id];
-      });
-      this.bus.on('set', (id) => { this.lastUserMove = performance.now(); this.ultimoGesto[id] = performance.now(); });
+      this.bus.on('set', (id) => { this.ultimoGesto[id] = performance.now(); });
       this.bus.on('reset', () => {
-        this.baseline = null; this._tenendo = false;
-        this.registro = []; this.registroChiavi.clear();
-        this._scrivi('sistema', 'Seduta riaperta. Tutte le voci tornano a 50. I debiti non sono azzerati.');
+        this.verbale = []; this.verbaleChiavi.clear(); this._verbaleSporco = true;
+        if (this.app.eventi) this.app.eventi.reset();
       });
     }
 
-    /* direzione di uno slider a parole, con il nome del suo estremo;
-       vuota se l'estremo ripete il nome dello slider */
-    _verso(id, su) {
-      const s = this.slider[id], testo = su ? s.dx : s.sx;
-      return testo.toUpperCase() === s.nome ? '' : `<em>${testo}</em>`;
+    /* ---------------------------------------------------------------
+       Pannello: NECESSITÀ (stato della convivenza, schema, quadranti)
+       e CONFLITTI (barre, grafico, ultimo evento, verbale)
+       --------------------------------------------------------------- */
+    _buildPannello() {
+      const P = document.getElementById('pannello');
+      const txt = (x, y, cls, s, extra) => { const t = mk('text', Object.assign({ x, y, class: cls }, extra || {}), P); t.textContent = s; return t; };
+
+      // --- NECESSITÀ -----------------------------------------------------
+      txt(1722, 120, 'titolo', 'NECESSITÀ');
+      txt(2195, 97, 'etichetta', 'Stato della', { 'text-anchor': 'end' });
+      txt(2195, 119, 'etichetta', 'convivenza', { 'text-anchor': 'end' });
+      this.convLinee = mk('path', { fill: 'none', stroke: '#8C8C8C', 'stroke-width': 1, 'stroke-linejoin': 'round' }, P);
+      this.convPunti = mk('path', { fill: 'none', stroke: '#8C8C8C', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, P);
+      mk('circle', { cx: 2226, cy: 102, r: 11.5, fill: '#fff', stroke: '#3B3534', 'stroke-width': 5 }, P);
+      mk('circle', { cx: 2497, cy: 102, r: 11.5, fill: '#fff', stroke: '#A89287', 'stroke-width': 5 }, P);
+      this.convTesto = txt(2361, 108.5, 'stato-conv', 'STABILE');
+
+      FILI.forEach(([x1, y1, x2, y2]) => mk('path', { d: `M${x1} ${y1}L${x2} ${y2}`, class: 'filo' }, P));
+
+      // fattori del territorio
+      this.tags = [];
+      const tag = (d, lupo) => {
+        const g = mk('g', { class: 'tag' }, P);
+        mk('rect', { x: d.x, y: d.y, width: d.w, height: H_SCATOLA, class: 'scatola' }, g);
+        mk('text', { x: d.x + d.w / 2, y: d.y + 23.2, class: 'scatola-t' }, g).textContent = d.t;
+        const sy = lupo ? d.y - 1.5 : d.y + H_SCATOLA - 1.5;
+        const piolo = mk('rect', { x: d.s - 9, y: sy, width: 18, height: 3, class: 'piolo' + (lupo ? ' lupo' : '') }, g);
+        const title = mk('title', {}, g);
+        this.tags.push({ d, piolo, title, prec: null, t: -1e9 });
+      };
+      TAG_SU.forEach((d) => tag(d, false));
+      TAG_GIU.forEach((d) => tag(d, true));
+
+      // verbi (gli slider della console, letti qui)
+      this.verbi = {};
+      VERBI.forEach((v) => {
+        const w = v.x === 2136 ? 171 : 172;
+        const g = mk('g', {}, P);
+        mk('rect', { x: v.x, y: v.y, width: w, height: H_SCATOLA, class: 'scatola' }, g);
+        const num = mk('text', { x: v.x + 24, y: v.y + 24.5, class: 'verbo-n' }, g);
+        const freccia = mk('path', { class: 'verbo-f' }, g);
+        mk('text', { x: v.x + 66, y: v.y + 23.5, class: 'verbo-t' }, g).textContent = this.nomi[v.id][0] + this.nomi[v.id].slice(1).toLowerCase();
+        const sx = v.x + w / 2 - 7;
+        mk('rect', { x: sx - 9, y: v.alto ? v.y + H_SCATOLA - 1.5 : v.y - 1.5, width: 18, height: 3, class: 'piolo' }, g);
+        const s = this.slider[v.id];
+        mk('title', {}, g).textContent = `${this.nomi[v.id]}: 0 = ${s.sx}, 100 = ${s.dx}`;
+        this.verbi[v.id] = { num, freccia, fx: v.x + 55, fy: v.y + 16.5, ultimo: null };
+      });
+
+      // quadranti: sopra Homo sapiens (nero), sotto Canis lupus (bruno)
+      this.quadranti = {};
+      QUADRANTI.forEach((q) => {
+        const g = mk('g', {}, P);
+        mk('circle', { cx: q.cx - 78, cy: CY - 75.5, r: 7, fill: '#3B3534' }, g);
+        mk('circle', { cx: q.cx - 78, cy: CY + 76, r: 7, fill: '#A89287' }, g);
+        const tacche = { umano: [], lupo: [] };
+        for (let k = 0; k < TACCHE; k++) {
+          const a = (169.5 - k * 159 / (TACCHE - 1)) * Math.PI / 180;
+          ['umano', 'lupo'].forEach((who) => {
+            const s = who === 'umano' ? -1 : 1;
+            const c = Math.cos(a), sn = Math.sin(a) * s;
+            tacche[who].push(mk('line', {
+              x1: (q.cx + c * R_IN).toFixed(2), y1: (CY + sn * R_IN).toFixed(2),
+              x2: (q.cx + c * R_OUT).toFixed(2), y2: (CY + sn * R_OUT).toFixed(2),
+              class: 'tacca', stroke: '#F3F0EE'
+            }, g));
+          });
+        }
+        const vu = mk('text', { x: q.cx, y: CY - 37.5, class: 'quadrante-v' }, g); vu.textContent = 'XX';
+        mk('text', { x: q.cx, y: CY + 9, class: 'quadrante-nome' }, g).textContent = q.nome;
+        const vl = mk('text', { x: q.cx, y: CY + 50.5, class: 'quadrante-v lupo' }, g); vl.textContent = 'XX';
+        mk('title', {}, g).textContent = `${q.nome}: sopra Homo sapiens, sotto Canis lupus (0–100, simulati)`;
+        this.quadranti[q.id] = { tacche, vu, vl, nu: -1, nl: -1 };
+      });
+
+      // --- CONFLITTI -------------------------------------------------------
+      txt(1725, 890, 'titolo', 'CONFLITTI');
+      txt(2102, 868, 'etichetta', 'Stato del');
+      txt(2102, 889, 'etichetta', 'conflitto');
+      this.barre = [];
+      for (let i = 0; i < BARRE.n; i++) this.barre.push(mk('rect', { x: BARRE.x + i * BARRE.passo, y: BARRE.y, width: BARRE.w, height: BARRE.h, fill: '#F4F0EE' }, P));
+
+      mk('rect', { x: GR.x, y: GR.y, width: GR.w, height: GR.h, class: 'griglia' }, P);
+      GR.colonne.forEach((x) => mk('path', { d: `M${x} ${GR.y}V${GR.y + GR.h}`, class: 'griglia' }, P));
+      GR.righe.forEach((y) => mk('path', { d: `M${GR.x} ${y}H${GR.x + GR.w}`, class: 'griglia' }, P));
+      const clip = mk('clipPath', { id: 'clip-grafico' }, P);
+      mk('rect', { x: GR.x, y: GR.y - 12, width: GR.w, height: GR.h + 24 }, clip);
+      const gc = mk('g', { 'clip-path': 'url(#clip-grafico)' }, P);
+      this.punti = mk('g', {}, gc);
+      txt(2349, 1109, 'etichetta', 'Intensità');
+      txt(2349, 1125.5, 'etichetta', 'e punti di');
+      txt(2349, 1142, 'etichetta', 'conflitto');
+
+      mk('path', { d: 'M1724 1163.4H2510', class: 'linea-sez' }, P);
+      this.evIcona = mk('use', { href: '#s-bestiame', transform: 'translate(1788 1194) scale(1.375)' }, P);
+      this.evTitolo = mk('text', { x: 1825, y: 1201, class: 'ev-titolo' }, P);
+      this.evTesto = [mk('text', { x: 1825, y: 1223, class: 'ev-testo' }, P), mk('text', { x: 1825, y: 1244.5, class: 'ev-testo' }, P)];
+      mk('path', { d: 'M1724 1262.5H2510', class: 'linea-sez' }, P);
+      this.verbaleG = mk('g', {}, P);
+      this._evVer = -1;
+      this._verbaleSporco = true;
     }
 
-    /* aggiunge una riga al registro delle risposte */
-    _scrivi(tipo, html, chiave) {
+    /* ---------------------------------------------------------------
+       Verbale: per ogni slider che si muove da solo, la spinta principale
+       e la sua frase (DN.config.W). Si mostrano le due più recenti.
+       --------------------------------------------------------------- */
+    _scriviVerbale(fonte, html, chiave) {
       const now = performance.now();
-      if (chiave) {
-        const last = this.registroChiavi.get(chiave);
-        if (last && now - last < 25000) return;
-        this.registroChiavi.set(chiave, now);
-      }
-      this.registro.unshift({ tipo, html, t: now });
-      this.registro = this.registro.slice(0, 40);   // cronologia: le voci più vecchie sbiadiscono e scorrono in basso
-      this._registroSporco = true;
+      const last = this.verbaleChiavi.get(chiave);
+      if (last && now - last < 25000) return;
+      this.verbaleChiavi.set(chiave, now);
+      this.verbale.unshift({ fonte, html, t: now });
+      this.verbale = this.verbale.slice(0, 20);
+      this._verbaleSporco = true;
     }
 
-    /* ---------------------------------------------------------------
-       Console: due metà a specchio. Le coppie speculari sono
-       simmetriche rispetto all'asse centrale: cibo al centro,
-       discendenza all'esterno, e archi le collegano.
-       --------------------------------------------------------------- */
-    _buildConsole() {
-      const root = document.getElementById('console');
-      const byId = {};
-      this.cfg.SLIDERS.forEach((s) => { byId[s.id] = s; });
-      const umano = this.cfg.COPPIE.map((c) => c.umano).reverse();
-      const lupo = this.cfg.COPPIE.map((c) => c.lupo);
-
-      const halves = el('div', 'console-halves');
-      const mk = (ids, side) => {
-        const half = el('div', 'console-half ' + side);
-        const head = el('div', 'half-head', side === 'umano'
-          ? '<i class="specie">Homo sapiens</i> <span class="half-nota">azioni diverse, di soggetti diversi</span>'
-          : '<i class="specie">Canis lupus</i> <span class="half-nota">comportamenti osservabili, descritti da <i>Homo sapiens</i></span>');
-        const row = el('div', 'fader-row');
-        ids.forEach((id) => row.appendChild(this._fader(byId[id])));
-        half.appendChild(head); half.appendChild(row);
-        return half;
-      };
-      halves.appendChild(mk(umano, 'umano'));
-      halves.appendChild(el('div', 'console-axis'));
-      halves.appendChild(mk(lupo, 'lupo'));
-      root.appendChild(halves);
-
-      this.pairSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      this.pairSvg.setAttribute('class', 'pair-arcs');
-      root.appendChild(this.pairSvg);
-      // linee delle influenze: dallo slider che spinge a quelli che rispondono
-      this.linkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      this.linkSvg.setAttribute('class', 'link-arcs');
-      this.linkSvg.innerHTML = '<defs><marker id="punta" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8 z" fill="#1A1A1A"/></marker></defs><g></g>';
-      root.appendChild(this.linkSvg);
-      this.consoleRoot = root;
-    }
-
-    _fader(s) {
-      const f = el('div', 'fader ' + s.animale);
-      f.innerHTML = `
-        <i class="fader-led"></i>
-        <div class="fader-coppia">${s.coppia}</div>
-        <div class="fader-end top">${s.dx}</div>
-        <div class="fader-segno" aria-hidden="true">+</div>
-        <div class="fader-corpo">
-          <div class="fader-name">${s.nome}</div>
-          <div class="fader-track" tabindex="0" role="slider" aria-label="${s.nome}" aria-valuemin="0" aria-valuemax="100">
-            <div class="fader-slot"></div>
-            <div class="fader-target"></div>
-            <div class="fader-cap"></div>
-          </div>
-          <div class="fader-value">50</div>
-        </div>
-        <div class="fader-segno" aria-hidden="true">−</div>
-        <div class="fader-end bottom">${s.sx}</div>`;
-      const track = f.querySelector('.fader-track');
-      const valFromY = (cy) => {
-        const r = track.getBoundingClientRect();
-        return U.clamp((1 - (cy - r.top - CAP_H / 2) / (r.height - CAP_H)) * 100, 0, 100);
-      };
-      let grabOffset = 0;
-      track.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        track.setPointerCapture(e.pointerId);
-        track.focus({ preventScroll: true });
-        const cap = f.querySelector('.fader-cap').getBoundingClientRect();
-        // se si afferra il cappuccio non salta: si mantiene l'offset
-        grabOffset = (e.clientY >= cap.top && e.clientY <= cap.bottom) ? e.clientY - (cap.top + cap.height / 2) : 0;
-        this.bus.set(s.id, valFromY(e.clientY - grabOffset), 'mano');
-      });
-      track.addEventListener('pointermove', (e) => {
-        if (!track.hasPointerCapture(e.pointerId)) return;
-        this.bus.set(s.id, valFromY(e.clientY - grabOffset), 'mano');
-      });
-      const up = (e) => {
-        if (track.hasPointerCapture && track.hasPointerCapture(e.pointerId)) track.releasePointerCapture(e.pointerId);
-        this.bus.release(s.id, 'mano');
-      };
-      track.addEventListener('pointerup', up);
-      track.addEventListener('pointercancel', up);
-      track.addEventListener('lostpointercapture', () => this.bus.release(s.id, 'mano'));
-
-      let kt = null;
-      track.addEventListener('keydown', (e) => {
-        const step = e.shiftKey ? 10 : 2;
-        let d = 0;
-        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') d = step;
-        else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') d = -step;
-        else return;
-        e.preventDefault(); e.stopPropagation();
-        this.bus.set(s.id, this.bus.values[s.id] + d, 'tastiera');
-        clearTimeout(kt);
-        kt = setTimeout(() => this.bus.release(s.id, 'tastiera'), 700);
-      });
-
-      this.faders[s.id] = {
-        root: f, track,
-        cap: f.querySelector('.fader-cap'),
-        target: f.querySelector('.fader-target'),
-        value: f.querySelector('.fader-value'),
-        last: -1, glow: 0
-      };
-      return f;
-    }
-
-    /* archi che collegano le categorie speculari: cibo la più interna, discendenza la più esterna */
-    _layoutPairs() {
-      const svg = this.pairSvg, rr = this.consoleRoot.getBoundingClientRect();
-      const passo = 13, primo = 9, raggio = 4;
-      const w = rr.width, h = primo + passo * (this.cfg.COPPIE.length - 1) + 7;
-      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      svg.setAttribute('width', w); svg.setAttribute('height', h);
-      let html = '';
-      this.cfg.COPPIE.forEach((c, i) => {
-        const a = this.faders[c.umano].track.getBoundingClientRect();
-        const b = this.faders[c.lupo].track.getBoundingClientRect();
-        const xa = a.left + a.width / 2 - rr.left, xb = b.left + b.width / 2 - rr.left;
-        const y = primo + i * passo, mid = (xa + xb) / 2;
-        html += `<path d="M${xa} 0 V${y - raggio} Q${xa} ${y} ${xa + raggio} ${y} H${xb - raggio} Q${xb} ${y} ${xb} ${y - raggio} V0"/>`;
-        html += `<rect x="${mid - 48}" y="${y - 6}" width="96" height="12"/>`;
-        html += `<text x="${mid}" y="${y + 3.5}">${c.id}</text>`;
-      });
-      svg.innerHTML = html;
-    }
-
-    /* ---------------------------------------------------------------
-       Bilancio dei bisogni: due colonne speculari, stesse quattro barre
-       --------------------------------------------------------------- */
-    _buildBilancio() {
-      const root = document.getElementById('bilancio');
-      root.appendChild(el('div', 'bil-head', '<span><i class="specie">Homo sapiens</i></span><span class="bil-title">bisogni</span><span><i class="specie">Canis lupus</i></span>'));
-      this.bars = {};
-      BISOGNI.forEach((b) => {
-        const row = el('div', 'bil-row');
-        row.innerHTML = `
-          <span class="bil-arrow umano"></span>
-          <div class="bil-bar umano"><div class="bil-fill"></div><span class="bil-num"></span></div>
-          <span class="bil-label">${b.nome}</span>
-          <div class="bil-bar lupo"><div class="bil-fill"></div><span class="bil-num"></span></div>
-          <span class="bil-arrow lupo"></span>`;
-        root.appendChild(row);
-        this.bars[b.id] = {
-          umano: { fill: row.querySelector('.bil-bar.umano .bil-fill'), num: row.querySelector('.bil-bar.umano .bil-num'), arrow: row.querySelector('.bil-arrow.umano') },
-          lupo: { fill: row.querySelector('.bil-bar.lupo .bil-fill'), num: row.querySelector('.bil-bar.lupo .bil-num'), arrow: row.querySelector('.bil-arrow.lupo') }
-        };
-      });
-      root.appendChild(el('p', 'bil-note', 'Le frecce indicano la variazione dall\'ultimo gesto. I valori sono simulati e misurati dalla sola specie che sa misurare. Nessun equilibrio è stato raggiunto: i costi cambiano di posto.'));
-      // il registro (cronologia della negoziazione) sta subito sotto i bisogni
-      const reg = el('section', 'registro');
-      reg.innerHTML = '<h2>Verbale</h2><p class="reg-nota">Ogni gesto resta dove è stato lasciato. Le altre voci rispondono: le linee sulla console mostrano chi spinge chi, qui sotto il motivo. Il verbale registra ciò che accade sulla tavola, non ciò che è stato voluto. In alto la voce più recente.</p><ol id="registro-lista"></ol>';
-      root.after(reg);
-      this.registroEl = reg.querySelector('ol');
-    }
-
-    /* ---------------------------------------------------------------
-       Chi spinge chi: linee sulla console e frasi nel registro
-       --------------------------------------------------------------- */
     _risposte(now) {
       const sim = this.app.sim, bus = this.bus, T = this.cfg.TEMPO;
-      const rr = this.consoleRoot.getBoundingClientRect();
-      const cap = {};
-      for (const id in this.faders) {
-        const b = this.faders[id].cap.getBoundingClientRect();
-        cap[id] = [b.left + b.width / 2 - rr.left, b.top + b.height / 2 - rr.top, b.width];
-      }
-      const cimaGuide = Object.values(this.faders)[0].track.getBoundingClientRect().top - rr.top;
-      let html = '';
+      if (this._regT && now - this._regT < 400) return;
+      this._regT = now;
       const targets = sim.targets;
-      for (const j in this.faders) {
+      for (const j of bus.ids) {
         if (bus.isHeld(j)) continue;
-        const muove = Math.abs((targets[j] || bus.values[j]) - bus.values[j]);
-        (sim.contributi[j] || []).forEach((o) => {
-          const i = o.da, c = o.c;
-          if (Math.abs(c) < T.SOGLIA_RISPOSTA) return;
-          const recente = bus.isHeld(i) || now - (this.ultimoGesto[i] || -1e9) < 8000;
-          if (!recente && muove < 1.2) return;
-          const op = U.clamp(Math.abs(c) / 14, 0.25, 1) * (recente ? 1 : 0.55);
-          const [x1, y1, w1] = cap[i], [x2, y2, w2] = cap[j];
-          const dir = x2 > x1 ? 1 : -1;
-          const sx = x1 + dir * w1 / 2, tx = x2 - dir * (w2 / 2 + 3);
-          // l'arco resta all'altezza delle guide, sotto le scritte dei moduli:
-          // il colmo di una Bézier cubica simmetrica sta a 3/4 dell'altezza dei punti di controllo
-          const h = Math.min(26 + Math.abs(tx - sx) * 0.18, (Math.min(y1, y2) - cimaGuide) / 0.75);
-          html += `<path d="M${sx} ${y1} C${sx + dir * 20} ${y1 - h} ${tx - dir * 20} ${y2 - h} ${tx} ${y2}" style="opacity:${op.toFixed(2)};stroke-width:${(0.8 + Math.abs(c) / 20).toFixed(1)}" marker-end="url(#punta)"/>`;
-          html += `<text x="${tx + dir * 4}" y="${y2 - 10}" style="opacity:${op.toFixed(2)}">${c > 0 ? '▲' : '▼'}</text>`;
-        });
+        const d = (targets[j] !== undefined ? targets[j] : bus.values[j]) - bus.values[j];
+        if (Math.abs(d) < 2) continue;
+        let best = null;
+        (sim.contributi[j] || []).forEach((o) => { if (Math.sign(o.c) === Math.sign(d) && Math.abs(o.c) >= T.SOGLIA_RISPOSTA && (!best || Math.abs(o.c) > Math.abs(best.c))) best = o; });
+        if (!best) continue;
+        const i = best.da, e = this.cfg.W[i][j];
+        this._scriviVerbale(i, bus.values[i] > 50 ? e.su : e.giu, i + '>' + j + (d > 0 ? '+' : '-'));
       }
-      if (html !== this._linkHtml) { this.linkSvg.querySelector('g').innerHTML = html; this._linkHtml = html; }
-      this.linkSvg.setAttribute('width', rr.width); this.linkSvg.setAttribute('height', rr.height);
+    }
 
-      // frasi: per ogni slider che si sta muovendo, la spinta principale
-      if (!this._regT || now - this._regT > 400) {
-        this._regT = now;
-        for (const j in this.faders) {
-          if (bus.isHeld(j)) continue;
-          const d = (targets[j] || bus.values[j]) - bus.values[j];
-          if (Math.abs(d) < 2) continue;
-          let best = null;
-          (sim.contributi[j] || []).forEach((o) => { if (Math.sign(o.c) === Math.sign(d) && Math.abs(o.c) >= T.SOGLIA_RISPOSTA && (!best || Math.abs(o.c) > Math.abs(best.c))) best = o; });
-          if (!best) continue;
-          const i = best.da, e = this.cfg.W[i][j];
-          const su = bus.values[i] > 50;
-          const frase = su ? e.su : e.giu;
-          this._scrivi('risposta',
-            `<b>${this.nomi[i]}</b> ${this._verso(i, su)} → <b>${this.nomi[j]}</b> ${this._verso(j, d > 0)} <span>${frase}</span>`,
-            i + '>' + j + (d > 0 ? '+' : '-'));
-        }
+    _disegnaVerbale() {
+      const G = this.verbaleG;
+      G.textContent = '';
+      let y = 1295.5;
+      const voci = this.verbale.length ? this.verbale.slice(0, 3) : [{ fonte: null, html: 'Alla seduta risulta assente <i>Canis lupus</i>. La sedia non è rimossa. Muovi uno slider sulla console per aprire il verbale.' }];
+      voci.forEach((v, n) => {
+        if (y > 1420) return;
+        const rr = righe(v.html, 82, 2);
+        if (v.fonte) mk('use', { href: '#' + ICONA_VERBALE[v.fonte], transform: `translate(1787 ${y - 4.5}) scale(0.95)` }, G);
+        rr.forEach((r, k) => {
+          const t = mk('text', { x: 1826, y: y + k * 17, class: 'verbale' + (n === 0 && v.fonte ? ' nuova' : '') }, G);
+          scriviRiga(t, r);
+        });
+        y += rr.length * 17 + 11;
+      });
+    }
+
+    /* ultimo evento della seduta */
+    _disegnaEvento() {
+      const E = this.app.eventi, e = E.ultimo;
+      if (!e) {
+        this.evIcona.setAttribute('visibility', 'hidden');
+        scriviRiga(this.evTitolo, [{ t: `Registro dei conflitti [${E.data(E.giorno)}]`, it: false }]);
+        const r = righe('Nessun conflitto registrato nella seduta. L\'assenza di registrazioni non dimostra l\'assenza di <i>Canis lupus</i>.', 68, 2);
+        this.evTesto.forEach((t, k) => scriviRiga(t, r[k] || []));
+        return;
       }
-      if (this._registroSporco || !this._regRender || now - this._regRender > 1000) {
-        this._registroSporco = false; this._regRender = now;
-        this.registroEl.innerHTML = !this.registro.length
-          ? '<li class="sistema">Alla seduta risulta assente <i>Canis lupus</i>. La sedia non è rimossa. Muovi uno slider per aprire il verbale.</li>'
-          : this.registro.map((r) => {
-          const age = (now - r.t) / 1000;
-          const op = U.clamp(1 - (age - 20) / 40, 0.25, 1);
-          return `<li class="${r.tipo}" style="opacity:${op.toFixed(2)}">${r.html}</li>`;
-        }).join('');
-      }
+      this.evIcona.setAttribute('visibility', 'visible');
+      this.evIcona.setAttribute('href', '#' + ICONA_EVENTO[e.icona]);
+      scriviRiga(this.evTitolo, righe(`${e.titolo} [${e.data}]`, 80, 1)[0]);
+      const r = righe(e.testo, 68, 2);
+      this.evTesto.forEach((t, k) => scriviRiga(t, r[k] || []));
+    }
+
+    _disegnaPunti() {
+      const E = this.app.eventi, G = this.punti, F = this.cfg.EVENTI.FINESTRA_GIORNI;
+      G.textContent = '';
+      E.finestra().forEach((e) => {
+        const x = GR.w * (e.giorno + F) / F;
+        const y = GR.y + 10 + (GR.h - 20) * (1 - e.intensita);
+        const g = mk('g', {}, G);
+        mk('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 9.5, fill: '#F5A3A3' }, g);
+        mk('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 4.6, fill: '#EE4747' }, g);
+        const t = mk('title', {}, g);
+        t.textContent = `${e.titolo.replace(/<[^>]+>/g, '')} [${e.data}] · intensità ${Math.round(e.intensita * 100)} · evento simulato`;
+      });
     }
 
     /* ---------------------------------------------------------------
-       Legenda: un gruppo per livello, ognuno si accende e si spegne
-       dalla propria casella. Vive in un pannello a scomparsa sulla mappa.
+       Schede sulla tavola, zoom e trascinamento
        --------------------------------------------------------------- */
-    toggleLayer(k) {
-      const l = this.cfg.LIVELLI[k];
-      const inp = l && document.querySelector(`#legenda input[data-id="${l.id}"]`);
-      if (!inp) return;
-      inp.checked = !inp.checked;
-      inp.dispatchEvent(new Event('change'));
-    }
-
-    _buildLegenda() {
-      const P = DN.render.PAL, S = DN.render.SIMBOLI, KK = DN.territory.K;
-      const ink = P.inchiostro, acc = P.accento, fo = P.foglio;
-      const svg = (inner) => `<svg class="lg" viewBox="0 0 34 14">${inner}</svg>`;
-      const matrice = (k) => ({ canvas: k });
-      const croce = (x, y, r) => `M${x - r} ${y - r}l${2 * r} ${2 * r}M${x + r} ${y - r}l${-2 * r} ${2 * r}`;
-      // un gruppo per ciascun livello, nello stesso ordine dei tasti 1–8
-      const voci = {
-        suolo: ['Matrice del suolo', 'OpenStreetMap', [
-          [matrice(KK.BOSCO), 'bosco'],
-          [svg(`<rect x="1.5" y="1.5" width="31" height="11" fill="${fo}" stroke="${P.tintaScura}" stroke-width=".6"/>`), 'prateria, pascolo'],
-          [matrice(KK.ARBUSTO), 'arbusteto, ex pascolo'],
-          [matrice(KK.ROCCIA), 'roccia'],
-          [matrice(KK.ABITATO), 'paesi e contrade']
-        ]],
-        umano: ['Presenza di <i>Homo sapiens</i>', 'simulata', [
-          [svg(`<rect x="1" y="1" width="32" height="12" fill="#96978F" fill-opacity=".16"/>`), 'paesi, pascoli attivi, strade']
-        ]],
-        lupo: ['Presenza di <i>Canis lupus</i>', 'simulata', [
-          [svg(`<rect x="1.5" y="1.5" width="31" height="11" rx="5.5" fill="none" stroke="${ink}" stroke-opacity=".8" stroke-width=".8" stroke-dasharray="3 2.2"/>` +
-            [6, 11, 16, 21, 26].map((x, i) => `<circle cx="${x + (i % 2) * 2.5}" cy="${i % 2 ? 5 : 9}" r=".7" fill="${ink}" fill-opacity=".55"/>`).join('')), 'area di presenza'],
-          [svg(`<rect x="1.5" y="1.5" width="31" height="11" rx="5.5" fill="none" stroke="${ink}" stroke-opacity=".8" stroke-width=".8" stroke-dasharray="1.2 2.2"/>`), 'presenza frammentata']
-        ]],
-        conflitti: ['Zone di conflitto', 'simulate', [
-          [svg([7, 15, 23].map((x) => `<circle cx="${x}" cy="${x === 15 ? 5 : 9}" r="2" fill="none" stroke="${acc}" stroke-width=".8"/>`).join('')), 'uccisione di bovini e ovicaprini'],
-          [svg([7, 15, 23].map((x) => `<circle cx="${x}" cy="${x === 15 ? 5 : 9}" r="1.2" fill="${acc}"/>`).join('')), 'margine delle contrade'],
-          [svg(`<path d="${croce(8, 7, 2)}${croce(17, 7, 2)}${croce(26, 7, 2)}" stroke="${acc}" stroke-width=".9"/>`), 'trappola (uccisioni)'],
-          [svg(`<rect x="7" y="3.5" width="5" height="5" fill="none" stroke="${ink}" stroke-opacity=".6" stroke-width=".6"/><rect x="20" y="6" width="5" height="5" fill="none" stroke="${ink}" stroke-opacity=".6" stroke-width=".6"/>`), 'pascolo custodito']
-        ]],
-        corridoi: ['Corridoi e attraversamenti', 'simulati', [
-          [svg(`<path d="M2 7H31M28 4.5L31 7L28 9.5" stroke="${ink}" stroke-width="1.1" fill="none"/>`), 'aperto'],
-          [svg(`<path d="M2 7H31" stroke="${ink}" stroke-width="1.1" stroke-dasharray="5 4"/>`), 'non contrastato'],
-          [svg(`<path d="M2 7H31" stroke="${acc}" stroke-width="1.1"/>`), 'conteso'],
-          [svg(`<path d="M2 7H31" stroke="${ink}" stroke-width="1.1"/><path d="${croce(10, 7, 2)}${croce(22, 7, 2)}" stroke="${acc}" stroke-width=".9"/>`), 'trappola'],
-          [svg(`<path d="M2 7H13M21 7H31" stroke="${ink}" stroke-width="1.1"/><path d="M15.5 2V12M18.5 2V12" stroke="${acc}" stroke-width="1"/>`), 'interrotto'],
-          [svg(`<circle cx="17" cy="7" r="4" fill="${acc}" stroke="${fo}" stroke-width="1"/>`), 'nodo di conflitto'],
-          [svg(`<circle cx="17" cy="7" r="4" fill="${fo}" stroke="${ink}" stroke-width=".9"/><circle cx="17" cy="7" r="1.3" fill="${ink}"/>`), 'nodo senza conflitto registrato']
-        ]],
-        viabilita: ['Strade e sentieri', 'OpenStreetMap', [
-          [svg(`<path d="M2 7H32" stroke="${ink}" stroke-width="3.2"/><path d="M2 7H32" stroke="${fo}" stroke-width="1.5"/>`), 'strada principale'],
-          [svg(`<path d="M2 7H32" stroke="${ink}" stroke-opacity=".6" stroke-width=".8"/>`), 'strada locale'],
-          [svg(`<path d="M2 7H32" stroke="${ink}" stroke-opacity=".3" stroke-width=".7" stroke-dasharray="1.5 3"/>`), 'strada locale chiusa'],
-          [svg(`<path d="M2 7H32" stroke="${ink}" stroke-opacity=".45" stroke-width=".7" stroke-dasharray="3.5 2.5"/>`), 'sentiero']
-        ]],
-        documentati: ['Uccisioni documentate', 'dato reale', [
-          [svg(`<rect x="11.5" y="2.5" width="9" height="9" fill="${fo}" stroke="${acc}" stroke-width=".9"/><rect x="15.2" y="6.2" width="1.6" height="1.6" fill="${acc}"/><text x="23" y="10" font-size="7.5" font-style="italic" fill="${acc}" font-family="Newsreader, Georgia, serif">40</text>`), 'eventi per malga, 2012–2024'],
-          [svg(`<rect x="14.5" y="4.5" width="5" height="5" fill="${ink}"/>`), 'malga con pascolo attivo'],
-          [svg(`<rect x="14.5" y="4.5" width="5" height="5" fill="none" stroke="${P.inchiostro3}" stroke-width=".7"/>`), 'malga senza pascolo']
-        ]],
-        rilievo: ['Isoipse, acque, nomi', 'TINITALY · OpenStreetMap', [
-          [svg(`<path d="M2 10 C9 6 16 11 32 5" stroke="${ink}" stroke-opacity=".3" stroke-width=".6" fill="none"/><path d="M2 13 C10 9 18 13 32 9" stroke="${ink}" stroke-opacity=".15" stroke-width=".5" fill="none"/>`), 'isoipse ogni 50 m'],
-          [svg(`<path d="M2 9 C10 3 22 13 32 6" stroke="${P.acqua}" stroke-opacity=".7" stroke-width=".9" fill="none"/>`), 'corsi d\'acqua'],
-          [svg(`<text x="2" y="10" font-size="7" letter-spacing="1" fill="${ink}" font-family="Newsreader, Georgia, serif">ERBEZZO</text>`), 'paese; da vicino anche contrade e malghe']
-        ]]
-      };
-      const root = document.getElementById('legenda');
-      this.cfg.LIVELLI.forEach((l, n) => {
-        const [titolo, fonte, list] = voci[l.id];
-        const g = el('div', 'lg-group' + (l.on ? '' : ' spento'));
-        const testa = el('label', 'lg-head');
-        testa.innerHTML = `<input type="checkbox" id="liv-${l.id}" data-id="${l.id}" ${l.on ? 'checked' : ''}><span class="lg-title">${titolo}</span><span class="lg-fonte-breve">${fonte}</span><span class="key">${n + 1}</span>`;
-        testa.querySelector('input').addEventListener('change', (e) => {
-          this.app.renderer.setLayer(l.id, e.target.checked);
-          g.classList.toggle('spento', !e.target.checked);
-        });
-        g.appendChild(testa);
-        list.forEach(([sym, txt]) => {
-          const item = el('div', 'lg-item');
-          if (typeof sym === 'string') item.innerHTML = sym;
-          else {
-            const c = document.createElement('canvas'), d = window.devicePixelRatio || 1;
-            c.className = 'lg'; c.width = 34 * d; c.height = 14 * d;
-            const x = c.getContext('2d'); x.scale(d, d);
-            const s = S[sym.canvas];
-            if (s.modo === 'tinta') { x.fillStyle = s.colore; x.fillRect(1, 1, 32, 12); }
-            else {
-              // nella legenda il pattern è più fitto, per leggerlo in poco spazio
-              const p = new Path2D(), u = 7;
-              for (let j = 0; j < 2; j++) for (let i = 0; i < 4; i++) s.add(p, 5 + i * u + (j % 2) * 3.5, 4 + j * 6, u * (s.modo === 'fill' ? 1.4 : 0.9), i, j);
-              x.strokeStyle = x.fillStyle = P.inchiostro; x.lineCap = 'round'; x.globalAlpha = Math.min(1, s.alpha + 0.2);
-              if (s.modo === 'fill') x.fill(p); else { x.lineWidth = s.lw(8); x.stroke(p); }
-            }
-            item.appendChild(c);
-          }
-          item.appendChild(el('span', '', txt));
-          g.appendChild(item);
-        });
-        root.appendChild(g);
-      });
-      root.appendChild(el('p', 'lg-fonte', DN.datiLessinia.meta.attribuzioni));
-    }
-
-    /* pannello della legenda: chiuso di default, si ricorda lo stato per chi guarda */
-    _bindLegenda() {
-      const pan = document.getElementById('leg-pannello');
-      const apri = document.getElementById('leg-apri');
-      const chiudi = document.getElementById('leg-chiudi');
-      const imposta = (aperto, fuoco) => {
-        pan.classList.toggle('aperto', aperto);
-        pan.inert = !aperto;
-        apri.setAttribute('aria-expanded', String(aperto));
-        apri.classList.toggle('nascosta', aperto);
-        try { localStorage.setItem('dn-legenda', aperto ? '1' : '0'); } catch (e) { /* storage non disponibile */ }
-        if (fuoco) (aperto ? chiudi : apri).focus({ preventScroll: true });
-      };
-      apri.addEventListener('click', () => imposta(true, true));
-      chiudi.addEventListener('click', () => imposta(false, true));
-      this.legenda = (aperto) => imposta(aperto === undefined ? !pan.classList.contains('aperto') : aperto, false);
-      let iniziale = false;
-      try { iniziale = localStorage.getItem('dn-legenda') === '1'; } catch (e) { /* storage non disponibile */ }
-      imposta(iniziale, false);
-    }
-
-    _bindButtons() {
-      document.getElementById('btn-reset').addEventListener('click', () => this.app.reset());
-      document.getElementById('btn-midi').addEventListener('click', async () => {
-        const a = new DN.input.MidiAdapter(this.bus);
-        try { await a.connect(); } catch (e) { a.status = 'errore: ' + e.message; }
-        document.getElementById('dev-status').textContent = 'MIDI — ' + a.status;
-      });
-      document.getElementById('btn-serial').addEventListener('click', async () => {
-        const a = new DN.input.SerialAdapter(this.bus);
-        try { await a.connect(); } catch (e) { a.status = 'errore: ' + e.message; }
-        document.getElementById('dev-status').textContent = 'Seriale — ' + a.status;
-      });
-    }
-
     _bindMap() {
       const canvas = this.app.renderer.canvas;
       const tip = document.getElementById('tooltip');
       const R = this.app.renderer, T = this.app.territory, CF = DN.territory.CONFLITTO;
       const pct = (x) => Math.round(x * 100) + '%';
       const COSTI = {
-        [CF.PREDAZIONE]: ['Zona di uccisioni', 'Bovini e ovicaprini uccisi al pascolo incustodito. Ogni capo ucciso apre un debito.', 'Si nutre di bovini e ovicaprini al pascolo. Esposizione all\'uccisione.'],
+        [CF.PREDAZIONE]: ['Zona di uccisioni', 'Bovini e ovicaprini uccisi al pascolo incustodito. Ogni animale ucciso apre un debito.', 'Si nutre di bovini e ovicaprini al pascolo. Esposizione all\'uccisione.'],
         [CF.MARGINE]: ['Margine delle contrade', 'presenze vicino alle case, paura', 'Attraversamento tra cani e luci. Esposizione all\'uccisione.'],
         [CF.TRAPPOLA]: ['Zona trappola', 'conflitto che si ripete ogni stagione', 'Qui si uccide chi passa.'],
         [CF.PRESIDIO]: ['Pascolo custodito', 'lavoro di custodia: recinti, cani, pastore', 'Mandrie e greggi non risultano accessibili. Il mancato passaggio non vale assenso.']
       };
-      // --- zoom e trascinamento -------------------------------------------
       const punti = new Map();
       let trascina = null, pizzico = null;
       const locale = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
@@ -509,27 +392,22 @@
       canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const [mx, my] = locale(e);
-        const passo = e.deltaMode === 1 ? 0.05 : e.ctrlKey ? 0.01 : 0.0018;   // righe, pizzico sul trackpad, pixel
+        const passo = e.deltaMode === 1 ? 0.05 : e.ctrlKey ? 0.01 : 0.0018;
         R.zoomA(Math.exp(-e.deltaY * passo), mx, my);
         tip.hidden = true;
       }, { passive: false });
       canvas.addEventListener('dblclick', (e) => { const [mx, my] = locale(e); R.zoomA(e.shiftKey ? 0.5 : 2, mx, my); });
-      document.querySelectorAll('.map-comandi button').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const z = btn.dataset.zoom;
-          if (z === 'piu') R.zoomA(1.5); else if (z === 'meno') R.zoomA(1 / 1.5); else R.inquadra(z);
-        });
-      });
-      // scala grafica
+
+      // scala grafica: "1 KM" sopra la barra
       const barra = document.querySelector('.map-scala-barra'), etichetta = document.querySelector('.map-scala-km');
       const cellaKm = DN.datiLessinia.meta.cella_m / 1000;
       R.onView = () => {
         const kmPx = cellaKm / R.k;
         const passi = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10];
         let km = passi[0];
-        passi.forEach((p) => { if (p / kmPx <= 120) km = p; });
+        passi.forEach((p) => { if (p / kmPx <= 140 * R.u) km = p; });
         barra.style.width = (km / kmPx).toFixed(1) + 'px';
-        etichetta.textContent = km < 1 ? Math.round(km * 1000) + ' m' : km + ' km';
+        etichetta.textContent = km < 1 ? Math.round(km * 1000) + ' M' : km + ' KM';
       };
       R.onView();
 
@@ -541,9 +419,13 @@
         R.hover = h;
         if (!h) { tip.hidden = true; return; }
         let html = '', cls = 'tooltip';
-        if (h.tipo === 'nodo') {
+        if (h.tipo === 'evento') {
           const n = h.n;
-          cls += n.conflitto ? ' conflitto' : ' convivenza';
+          cls += ' conflitto';
+          html = `<div class="tt-title">${n.titolo} [${n.data}]</div><div class="tt-sub">evento simulato della seduta</div><div>${n.testo}</div>`;
+        } else if (h.tipo === 'nodo') {
+          const n = h.n;
+          cls += ' conflitto';
           html = `<div class="tt-title">${n.titolo}</div><div class="tt-row"><b class="specie">Homo sapiens</b><span>${n.umano}</span></div><div class="tt-row"><b class="specie">Canis lupus</b><span>${n.lupo}</span></div>`;
         } else if (h.tipo === 'documentato') {
           const n = h.n;
@@ -576,22 +458,38 @@
       canvas.addEventListener('mouseleave', () => { tip.hidden = true; R.hover = null; });
     }
 
+    apriConsole() { window.open('console.html', 'dn-console', 'popup,width=1400,height=760'); }
+
     _bindKeys() {
       window.addEventListener('keydown', (e) => {
-        if (e.target && e.target.classList && e.target.classList.contains('fader-track') && e.key.startsWith('Arrow')) return;
         if (e.metaKey || e.ctrlKey || e.altKey) return;
-        const k = e.key.toLowerCase();
+        const k = e.key.toLowerCase(), R = this.app.renderer;
         if (k === 'd') this.toggleDebug();
         else if (k === 'r') this.app.reset();
-        else if (k === 'l') this.legenda();
-        else if (k === 'escape') this.legenda(false);
-        else if (k === '+' || k === '=') this.app.renderer.zoomA(1.5);
-        else if (k === '-') this.app.renderer.zoomA(1 / 1.5);
-        else if (k === '0') this.app.renderer.inquadra('adatta');
+        else if (k === 'c') this.apriConsole();
+        else if (k === 't') window.open('trattato.html', 'dn-trattato', 'popup,width=1500,height=1000');
+        else if (k === 'u') { R.documentati = !R.documentati; }
+        else if (k === '+' || k === '=') R.zoomA(1.5);
+        else if (k === '-') R.zoomA(1 / 1.5);
+        else if (k === '0') R.inquadra('adatta');
         else if (k === 'f') {
           if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
           else document.exitFullscreen && document.exitFullscreen();
-        } else if (/^[1-8]$/.test(k)) this.toggleLayer(parseInt(k, 10) - 1);
+        }
+      });
+    }
+
+    _bindButtons() {
+      document.getElementById('btn-console').addEventListener('click', () => this.apriConsole());
+      document.getElementById('btn-midi').addEventListener('click', async () => {
+        const a = new DN.input.MidiAdapter(this.bus);
+        try { await a.connect(); } catch (e) { a.status = 'errore: ' + e.message; }
+        document.getElementById('dev-status').textContent = 'MIDI — ' + a.status;
+      });
+      document.getElementById('btn-serial').addEventListener('click', async () => {
+        const a = new DN.input.SerialAdapter(this.bus);
+        try { await a.connect(); } catch (e) { a.status = 'errore: ' + e.message; }
+        document.getElementById('dev-status').textContent = 'Seriale — ' + a.status;
       });
     }
 
@@ -600,63 +498,102 @@
       document.getElementById('debug').hidden = !this.debug;
     }
 
-    layout() { this._layoutPairs(); }
+    layout() { /* il pannello è un SVG: si adatta da solo */ }
 
     /* ---------------------------------------------------------------
        Aggiornamento a ogni frame
        --------------------------------------------------------------- */
     frame(now) {
-      const sim = this.app.sim, bus = this.bus;
-      // fader: posizione, alone quando si muovono da soli, mano dell'utente
-      for (const id in this.faders) {
-        const f = this.faders[id];
-        const v = bus.values[id];
-        const held = bus.isHeld(id);
-        if (Math.abs(v - f.last) > 0.01) {
-          f.cap.style.bottom = `calc(${v}% - ${v * CAP_H / 100}px)`;
-          f.value.textContent = Math.round(v);
-          f.track.setAttribute('aria-valuenow', Math.round(v));
-          f.last = v;
-        }
-        const tg = sim.targets[id];
-        if (tg !== undefined) f.target.style.bottom = `calc(${tg}% - ${tg * CAP_H / 100}px + ${CAP_H / 2}px)`;
-        const g = held ? 0 : U.clamp((sim.motion[id] - 0.15) / 2.2, 0, 1);
-        f.glow = f.glow * 0.85 + g * 0.15;
-        f.root.style.setProperty('--moto', f.glow.toFixed(3));
-        f.root.classList.toggle('held', held);
-        f.root.classList.toggle('auto', f.glow > 0.08);
+      const sim = this.app.sim, bus = this.bus, res = sim.result;
+
+      // verbi: valore e direzione dell'ultimo movimento (pieno mentre si muove)
+      for (const id in this.verbi) {
+        const v = bus.values[id], o = this.verbi[id];
+        const d = v - this.prec[id];
+        const muove = Math.abs(d) > 0.01;
+        if (muove) this.dir[id] = d > 0 ? 1 : -1;
+        this.prec[id] = v;
+        const n = String(Math.round(v)).padStart(2, '0');
+        const chiave = n + this.dir[id] + muove;
+        if (o.ultimo === chiave) continue;
+        o.ultimo = chiave;
+        o.num.textContent = n;
+        const x = o.fx, y = o.fy;
+        o.freccia.setAttribute('d', this.dir[id] > 0 ? `M${x - 3.6} ${y + 3}L${x} ${y - 3.6}L${x + 3.6} ${y + 3}Z` : `M${x - 3.6} ${y - 3}L${x} ${y + 3.6}L${x + 3.6} ${y - 3}Z`);
+        o.freccia.setAttribute('class', 'verbo-f' + (muove ? ' muove' : ''));
       }
 
-      this._risposte(now);
-
-      // bilancio
-      const res = sim.result;
-      const since = (now - this.lastUserMove) / 1000;
-      const fade = U.clamp(1 - (since - this.cfg.TEMPO.FRECCE_DURATA * 0.7) / (this.cfg.TEMPO.FRECCE_DURATA * 0.3), 0, 1);
-      BISOGNI.forEach((b) => {
-        ['umano', 'lupo'].forEach((who) => {
-          const o = this.bars[b.id][who];
-          const v = res[who][b.id];
-          o.fill.style.width = v.toFixed(1) + '%';
-          o.num.textContent = Math.round(v);
-          let txt = '', cls = 'bil-arrow ' + who;
-          if (this.baseline && fade > 0) {
-            const d = v - this.baseline[who][b.id];
-            if (Math.abs(d) >= 0.5) {
-              txt = (d > 0 ? '▲ ' : '▼ ') + Math.abs(d).toFixed(Math.abs(d) < 10 ? 1 : 0);
-              cls += d > 0 ? ' su' : ' giu';
-            }
-          }
-          if (o.arrow.textContent !== txt) o.arrow.textContent = txt;
-          o.arrow.className = cls;
-          o.arrow.style.opacity = fade;
-        });
+      // quadranti
+      QUADRANTI.forEach((q) => {
+        const o = this.quadranti[q.id];
+        const vu = res.umano[q.id], vl = res.lupo[q.id];
+        const nu = Math.round(vu / 100 * TACCHE), nl = Math.round(vl / 100 * TACCHE);
+        if (nu !== o.nu) { o.tacche.umano.forEach((t, k) => t.setAttribute('stroke', k < nu ? '#3B3534' : '#F3F0EE')); o.nu = nu; }
+        if (nl !== o.nl) { o.tacche.lupo.forEach((t, k) => t.setAttribute('stroke', k < nl ? '#A89287' : '#F3F0EE')); o.nl = nl; }
+        const tu = String(Math.round(vu)), tl = String(Math.round(vl));
+        if (o.vu.textContent !== tu) o.vu.textContent = tu;
+        if (o.vl.textContent !== tl) o.vl.textContent = tl;
       });
 
-      // fps
-      const F = this._fps;
-      F.n++;
-      if (now - F.t > 1000) { F.v = F.n * 1000 / (now - F.t); F.n = 0; F.t = now; }
+      // fattori: il piolo diventa rosso mentre il valore cambia
+      if (!this._tagT || now - this._tagT > 250) {
+        this._tagT = now;
+        this.tags.forEach((g) => {
+          const v = res.territorio[g.d.v];
+          if (g.prec !== null && Math.abs(v - g.prec) > 0.15) g.t = now;
+          g.prec = v;
+          g.piolo.classList.toggle('cambia', now - g.t < 1200);
+          const s = `${g.d.t}: ${Math.round(v)} (simulato)`;
+          if (g.title.textContent !== s) g.title.textContent = s;
+        });
+      }
+
+      // stato della convivenza: squilibrio tra le necessità e conflitto
+      const media = (o) => (o.cibo + o.spazio + o.sicurezza + o.discendenza) / 4;
+      const squilibrio = Math.abs(media(res.umano) - media(res.lupo));
+      const conf = res.territorio.conflitto;
+      const target = U.clamp((squilibrio - 6) / 30, 0, 1) * 0.6 + U.clamp((conf - 20) / 50, 0, 1) * 0.4;
+      this.inst += (target - this.inst) * 0.05;
+      const instabile = this.inst >= 0.35;
+      const etichetta = instabile ? 'INSTABILE' : 'STABILE';
+      const qi = Math.round(this.inst * 40);
+      if (this._convKey !== etichetta + qi) {
+        this._convKey = etichetta + qi;
+        this.convTesto.textContent = etichetta;
+        this.convTesto.style.fill = lerpColore('#3B3534', '#D6D6D6', U.clamp(this.inst / 0.8, 0, 1));
+        const meta = (etichetta.length * 0.6 * 18 + (etichetta.length - 1) * 1.5) / 2;
+        const a = 2361 - meta - 8, b = 2361 + meta + 8;
+        const amp = this.inst * 7;
+        const zig = (x0, x1) => {
+          if (amp < 0.3) return `M${x0} 102H${x1}`;
+          const n = Math.max(2, Math.round((x1 - x0) / 7));
+          let d = `M${x0} 102`;
+          for (let i = 1; i <= n; i++) d += `L${(x0 + (x1 - x0) * i / n).toFixed(1)} ${i === n ? 102 : (102 + (i % 2 ? -amp : amp)).toFixed(1)}`;
+          return d;
+        };
+        this.convLinee.setAttribute('d', zig(2241, a) + zig(b, 2482));
+        this.convPunti.setAttribute('d', `M${a} 102h0M${b} 102h0`);
+      }
+
+      // stato del conflitto
+      this.conf += (conf - this.conf) * 0.08;
+      const nb = Math.round(this.conf / 100 * BARRE.n);
+      if (nb !== this._nb) { this._nb = nb; this.barre.forEach((b, i) => b.setAttribute('fill', i < nb ? '#EE4747' : '#F4F0EE')); }
+
+      // eventi: grafico che scorre col calendario, ultimo evento
+      const E = this.app.eventi, F = this.cfg.EVENTI.FINESTRA_GIORNI;
+      if (E.versione !== this._evVer) { this._evVer = E.versione; this._disegnaPunti(); this._disegnaEvento(); }
+      const gNow = E.giorno + E.acc / this.cfg.EVENTI.SECONDI_PER_GIORNO;
+      this.punti.setAttribute('transform', `translate(${(GR.x - GR.w * gNow / F).toFixed(2)} 0)`);
+      if (!E.ultimo && E.giorno !== this._gVuoto) { this._gVuoto = E.giorno; this._disegnaEvento(); }
+
+      // verbale
+      this._risposte(now);
+      if (this._verbaleSporco) { this._verbaleSporco = false; this._disegnaVerbale(); }
+
+      const Fp = this._fps;
+      Fp.n++;
+      if (now - Fp.t > 1000) { Fp.v = Fp.n * 1000 / (now - Fp.t); Fp.n = 0; Fp.t = now; }
       if (this.debug && (!this._dbgT || now - this._dbgT > 250)) { this._dbgT = now; this._renderDebug(); }
     }
 
@@ -669,26 +606,21 @@
       });
       s += '\nTERRITORIO\n';
       Object.entries(res.territorio).forEach(([k, v]) => { s += k.padEnd(20) + f(v) + '\n'; });
-      s += '\nBISOGNI         umano  lupo\n';
-      BISOGNI.forEach((b) => { s += b.id.padEnd(14) + f(res.umano[b.id]) + '  ' + f(res.lupo[b.id]) + '\n'; });
+      s += '\nNECESSITÀ       umano  lupo\n';
+      ['cibo', 'spazio', 'sicurezza', 'discendenza'].forEach((b) => { s += b.padEnd(14) + f(res.umano[b]) + '  ' + f(res.lupo[b]) + '\n'; });
+      s += '\nconvivenza (instabilità) ' + this.inst.toFixed(2) + '\n';
       const st = app.corridors.stats;
       s += '\nCORRIDOI (% lunghezza)\n';
       ['aperto', 'interrotto', 'trappola', 'conteso', 'tollerato'].forEach((k) => { s += k.padEnd(14) + f(st[k]) + '\n'; });
-      s += 'aree lupo        ' + st.aree + '\n';
-      s += 'disegnati/misur. ' + st.percorsiDisegnati + '/' + st.percorsiMisurati + '\n';
-      s += 'passaggi faunist. ' + st.passaggi + '\n';
-      s += 'nodi              ' + app.corridors.nodi.length + '\n';
-      s += 'calcolo           ' + app.corridors.tempoCalcolo.toFixed(1) + ' ms\n';
       s += '\nTAVOLA\n';
       Object.entries(app.territory.stats).forEach(([k, v]) => { s += k.padEnd(16) + (typeof v === 'number' ? f(v) : v) + '\n'; });
-      const p = app.territory.percentuali();
-      Object.entries(p).forEach(([k, v]) => { s += ('% ' + k).padEnd(16) + f(v) + '\n'; });
-      s += '\nANCORE  ' + Object.entries(sim.ancore).map(([k, v]) => k.slice(0, 4) + ' ' + v.toFixed(0)).join('  ') + '\n';
+      s += '\nEVENTI  giorno ' + app.eventi.giorno + ' (' + app.eventi.data(app.eventi.giorno) + ')  totale ' + app.eventi.lista.length + '\n';
+      s += 'console ' + (performance.now() - (app.consoleVista || -1e9) < 3000 ? 'collegata' : 'non collegata') + '\n';
       s += '\nfps ' + this._fps.v.toFixed(0) + '\n';
       document.getElementById('debug-text').textContent = s;
     }
   }
 
-  DN.ui = { UI, BISOGNI };
+  DN.ui = { UI };
 
 })(window.DN = window.DN || {});

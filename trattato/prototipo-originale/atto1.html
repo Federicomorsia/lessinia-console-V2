@@ -1,0 +1,445 @@
+<title>Trattato generativo, Atto I</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=IBM+Plex+Sans+Condensed:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una colonna da ledwall verticale (1080 px, scalata) occupata solo dal testo; banco di negoziazione a destra. */
+:root{
+  --page:#e6e5e0; --panel:#f2f1ec; --fg:#17171a; --muted:#6a6964; --line:#cdcbc4; --well:#d8d7d0;
+  --hum:#2f5fa8; --wolf:#a8641c;
+  --paper:#f7f7f4; --ink:#0a0a0a; --ink2:#3a3a37; --ink3:#b0afaa;
+  --f-serif:'Newsreader','Iowan Old Style',Georgia,serif;
+  --f-ui:'IBM Plex Sans Condensed','Arial Narrow',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#121212; --panel:#1b1b1c; --fg:#ebeae5; --muted:#9a9993; --line:#363638; --well:#070707;
+  --hum:#8aaee8; --wolf:#e2a768; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --page:#121212; --panel:#1b1b1c; --fg:#ebeae5; --muted:#9a9993; --line:#363638; --well:#070707;
+  --hum:#8aaee8; --wolf:#e2a768; color-scheme:dark }
+
+html,body{height:100%}
+body{background:var(--page);color:var(--fg);font-family:var(--f-ui)}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;padding-block:20px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  box-sizing:border-box;min-height:100%}
+@media (max-width:860px){.app{grid-template-columns:1fr}}
+
+/* ---------- ledwall ---------- */
+.stage{min-width:0;display:flex;justify-content:center;align-items:flex-start}
+.frame{position:relative;width:min(100%, calc((100vh - 40px) * var(--ar)));aspect-ratio:var(--arw)/var(--arh);
+  max-width:100%;overflow:hidden;background:var(--paper);outline:1px solid var(--line)}
+@media (max-width:860px){.frame{width:min(100%, calc(82vh * var(--ar)))}}
+.col{position:absolute;left:0;top:0;width:1080px;height:var(--H);transform-origin:0 0;box-sizing:border-box;
+  padding:44px 52px 40px;background:var(--paper);color:var(--ink)}
+.col.inv{filter:invert(1)}
+
+.body{height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:.3em;overflow:hidden;
+  font-family:var(--f-serif);font-size:var(--fs,32px);line-height:1.2;letter-spacing:-.003em}
+.body.fitting{justify-content:flex-start}
+.body p{margin:0}
+.ttl{font-size:2.35em;line-height:.98;letter-spacing:-.02em}
+.ttl b{font-weight:800}.ttl i{font-style:normal;font-weight:200;color:var(--ink2)}
+.art .num{font-weight:800;color:var(--ink);margin-right:.2em}
+.end{font-style:italic}
+
+.wd{position:relative;font-weight:240;color:var(--ink3);transition:font-weight 1.3s ease,color 1.3s ease}
+.wd .hv{font-weight:800;color:var(--ink)}
+.wd .bl{color:var(--ink)}
+.k-i{font-style:italic}
+.k-w::after{content:"";position:absolute;left:-.08em;top:.56em;height:.085em;width:calc(100% + .16em);background:var(--ink);
+  transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.7,0,.2,1)}
+.k-w.cut::after{transform:scaleX(1)}
+
+.br{font-weight:200;color:var(--ink3);transition:opacity 2s}
+.slot .cur,.add .cur{font-weight:680;color:var(--ink);transition:font-weight 1.8s}
+.cur.fresh{font-weight:800}
+.gh{font-size:.55em;font-weight:200;color:var(--ink3);text-decoration:line-through;text-decoration-thickness:1px;margin-left:.3em;transition:opacity 2s}
+.gh:empty,.gl:empty{display:none}
+.gl{font:500 .36em/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-left:.4em;vertical-align:.9em;transition:opacity 2s}
+.add.is-off{display:none}
+.add.is-gone{font-size:.6em}
+.add.is-gone .cur{font-weight:200;color:var(--ink3);text-decoration:line-through;text-decoration-thickness:1px}
+
+.cp .old,.cp .new{text-decoration-line:line-through;text-decoration-thickness:2px;text-decoration-color:transparent;
+  transition:text-decoration-color 1s,font-weight 1.4s,color 1.2s}
+.cp .new{font-weight:720;color:var(--ink)}
+.st-proposta .old,.st-barrato .old{text-decoration-color:var(--ink);color:var(--ink3);font-weight:260}
+.st-ripristinato .old,.st-aperto .old{font-weight:800;color:var(--ink)}
+.st-ripristinato .new,.st-redatto .old{text-decoration-color:var(--ink);text-decoration-thickness:.085em;color:var(--ink2);font-weight:300}
+
+/* ---------- banco ---------- */
+.panel{min-width:0;display:flex;flex-direction:column;gap:20px;font-size:14px;line-height:1.35}
+.panel h1{font:600 22px/1.15 var(--f-serif);margin:0;text-wrap:balance}
+.panel p{margin:0;color:var(--muted)}
+.box{background:var(--panel);border:1px solid var(--line);padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px}
+.box h2{margin:0;font:600 11px/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase}
+.box.h h2{color:var(--hum)}.box.w h2{color:var(--wolf)}
+.sl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.sl label{font-size:14px}
+.sl output{font:500 12px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.sl input{grid-column:1/-1;width:100%;margin:0}
+.box.h input{accent-color:var(--hum)}.box.w input{accent-color:var(--wolf)}
+.ix{display:grid;grid-template-columns:132px 1fr 40px;gap:8px;align-items:center}
+.ix small,.sl small{display:block;font-size:11px;color:var(--muted)}
+.sl small{display:inline;margin-left:6px}
+.ix span:last-child{font:500 12px var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.bar{position:relative;height:8px;background:var(--well)}
+.bar i{position:absolute;top:0;bottom:0;background:var(--fg)}
+.bar.div::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.bar .th{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--wolf)}
+.status{display:inline-flex;align-items:center;gap:8px;font:500 13px var(--f-ui)}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--st,var(--muted))}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.row .lab{width:100%;font-size:12px;color:var(--muted)}
+button{font:500 13px var(--f-ui);color:var(--fg);background:transparent;border:1px solid var(--line);padding:6px 10px;cursor:pointer}
+button[aria-pressed="true"]{background:var(--fg);color:var(--panel);border-color:var(--fg)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--hum);outline-offset:2px}
+details summary{cursor:pointer;font-weight:600}
+details ul{margin:8px 0 0;padding-left:16px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+details b{color:var(--fg);font-weight:600}
+@media (prefers-reduced-motion: reduce){.wd,.cp .old,.cp .new,.k-w::after{transition-duration:.01s}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="fdefs"></defs></svg>
+
+<div class="app">
+  <div class="stage">
+    <div class="frame" id="frame">
+      <div class="col" id="col" lang="it"><div class="body" id="body"></div></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div>
+      <h1>Atto I, prova di stile</h1>
+      <p>Gli slider simulano il dispositivo. Ogni modifica del testo ha una sola causa, e ogni slider muove una sola modifica.</p>
+    </div>
+    <div class="box">
+      <span class="status" id="status">Negoziazione automatica</span>
+      <div class="ix"><span>Voce<small>presenza del lupo</small></span><div class="bar div"><i id="b-v"></i></div><span id="v-v"></span></div>
+      <div class="ix"><span>Inchiostro<small>conflitto sul pascolo</small></span><div class="bar"><i id="b-c"></i><span class="th" style="left:12%"></span></div><span id="v-c"></span></div>
+      <div class="ix"><span>Barratura<small>abbattere</small></span><div class="bar"><i id="b-B"></i><span class="th" style="left:60%"></span></div><span id="v-B"></span></div>
+      <div class="ix"><span>Riformulazione<small>proteggere</small></span><div class="bar div"><i id="b-r"></i></div><span id="v-r"></span></div>
+    </div>
+    <div class="box h"><h2>Specie umana</h2><div id="sl-h"></div></div>
+    <div class="box w"><h2>Lupo</h2><div id="sl-w"></div></div>
+    <div class="box">
+      <div class="row"><span class="lab">Negoziazione</span>
+        <button id="auto" aria-pressed="true">Automatica</button>
+        <button id="reset">Tutto a 50</button>
+      </div>
+      <div class="row"><span class="lab">Tempo</span>
+        <button data-sp="1" aria-pressed="false">1×</button><button data-sp="4" aria-pressed="true">4×</button><button data-sp="10" aria-pressed="false">10×</button>
+      </div>
+      <div class="row"><span class="lab">Formato ledwall</span>
+        <button data-fm="1920" aria-pressed="true">9:16</button><button data-fm="2160" aria-pressed="false">1:2</button><button data-fm="3240" aria-pressed="false">1:3</button>
+        <button id="inv" aria-pressed="false">Inverti</button>
+      </div>
+    </div>
+    <details class="box">
+      <summary>Cosa muove cosa</summary>
+      <ul>
+        <li><b>Voce</b> (disperdersi, avvicinarsi, fare branco): più il Lupo è presente sul territorio, più la protesta della Delegazione è in nero pieno. Quando si ritira, il testo arretra in grigio leggero.</li>
+        <li><b>Inchiostro</b> (predare e allevare sopra 50): il conflitto sul pascolo macchia le parole degli strumenti della caccia, al massimo una su undici.</li>
+        <li><b>Barratura</b> (abbattere oltre 60): la Specie umana barra le menzioni del Lupo e la proposta «individuo in disaccordo», e ripristina «nocivo».</li>
+        <li><b>Riformulazione</b> (proteggere): più la Specie umana protegge, più riconosce lo sterminio e il lessico si fa esplicito. Se protegge poco, la Delegazione aggiunge clausole per insistere.</li>
+        <li><b>Costruire</b> non agisce su questo Atto.</li>
+        <li><b>Riposo</b>: con l'automatica spenta, dopo 20 s senza spinte gli slider tornano a 50 e l'inchiostro asciuga più in fretta.</li>
+      </ul>
+    </details>
+  </aside>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- filtri ink bleed ----------
+   Come nella reference: le lettere si gonfiano e si fondono in masse nere a bordo liscio,
+   l'inchiostro cola verso il basso sulle righe sotto. 8 livelli × 3 varianti di colatura. */
+(function(){
+  let h='';
+  for(let i=1;i<=8;i++)for(let v=0;v<3;v++){
+    const rx=(0.08+i*0.17).toFixed(2), ry=(0.08+i*0.19).toFixed(2), sb=(0.55+i*0.14).toFixed(2);
+    h+=`<filter id="k${i}_${v}" x="-70%" y="-50%" width="240%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.05" numOctaves="2" seed="${i*11+v*5}" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="${(0.8+i*0.8).toFixed(1)}" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feMorphology in="d" operator="dilate" radius="${rx} ${ry}" result="f"/>
+      <feGaussianBlur in="f" stdDeviation="${sb}" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 26 -11"/>
+    </filter>`;
+  }
+  $('#fdefs').innerHTML=h;
+})();
+
+/* ---------- testo marcato ----------
+   {h|..} Specie umana  {w|..} Lupo  {x|..} strumenti della caccia (inchiostro)
+   {i|..} corsivo   {s:id} passaggio conteso   {a:id} aggiunta   {c:id} formula barrabile
+   front: motore del fronte di voce (da −1 a 1), dir: 1 dall'inizio, −1 dalla fine */
+const ARTS=[
+ {n:1,dir:1,front:s=>s.v+.05,
+  src:"Noi, Delegazione per il {w|Lupo}, presentiamo protesta formale contro la {h|Specie umana} per {s:a1} del {w|Lupo} dalla Lessinia e dalle terre che la circondano. La protesta riguarda una politica durata {s:a1b}, condotta con {x|premi in denaro}, {x|fosse scavate nel terreno}, {x|battute di caccia obbligatorie} e {x|armi da fuoco}."},
+ {n:2,dir:-1,front:s=>s.v+-.08,
+  src:"La Delegazione constata che la {h|Specie umana} ha prima trasformato la montagna. Ha {x|tagliato i boschi}, ha messo a coltura le terre marginali e con esse ha ridotto il {w|Cervo} e il {w|Capriolo}, che nutrivano il {w|Lupo}. Quando il {w|Lupo}, privato di ciò che lo nutriva, si è rivolto alle greggi, la {h|Specie umana} lo ha dichiarato {c:nocivo}. La Delegazione respinge l'ordine in cui la {h|Specie umana} ha raccontato questi fatti: prima è venuta la fame, poi la colpa."},
+ {n:3,dir:1,front:s=>s.v+.0,
+  src:"Nel 1397, a Verona, una {w|lupa viva} valeva {x|cinque lire}, pagate con le entrate del dazio sul gioco d'azzardo. Era stata {x|presa in una fossa} a febbraio, il mese in cui la {w|lupa} comincia a portare i {w|cuccioli}. Nel 1520 il {h|podestà} della città obbligava tutti gli uomini delle valli a {x|cacciare il Lupo} e {h|multava} chi restava a casa. Nelle lettere di quell'anno il {w|Lupo} compare come {c:crudeli}, formula che la Delegazione chiede di cancellare dagli atti. {a:parte}"},
+ {n:4,dir:-1,front:s=>s.v+-.04,
+  src:"L'ultima {w|lupa} documentata nel Veronese è stata {x|uccisa nel 1909}, nei boschi di Marcellise. Da allora il territorio è rimasto senza {w|Lupo} per centotré anni. Il {w|Bosco}, il {w|Cervo} e il {w|Capriolo} hanno attraversato quel secolo senza che nessuno chiedesse loro che cosa cambiava. La Delegazione osserva che nessun registro della {h|Specie umana} ha annotato questa assenza come {s:a4}."},
+ {n:5,dir:1,front:s=>s.v+.08,
+  src:"Nel 2012 il {w|Lupo} è tornato da solo, dopo circa mille chilometri a piedi. Nessuna istituzione umana lo ha richiamato, e nessuna gli ha restituito ciò che aveva perso. La {h|Specie umana} {s:a5}."},
+ {n:6,dir:-1,front:s=>s.v+-.02,
+  src:"La Delegazione dichiara che il ritorno del {w|Lupo} non estingue il debito contratto con la sua assenza. {a:debito} La {h|Specie umana} è invitata a dichiarare se riconosce tale debito. {i|Termine per la risposta: scaduto nel 1909.}"},
+ {n:0,dir:1,front:s=>s.v+-.15,end:true,
+  src:"Finora ha deciso: la {h|Specie umana}. Non consultati: il {w|Lupo}, il {w|Cervo}, il {w|Capriolo}, il {w|Bosco}."}
+];
+const SLOTS={
+ a1:{axis:'r',th:[-0.2,0.25],opts:["la rimozione","l'uccisione sistematica","lo sterminio deliberato"]},
+ a1b:{axis:'r',th:[0.1],opts:["dal medioevo al 1909","più di cinque secoli"]},
+ a4:{axis:'r',th:[-0.15,0.3],opts:["una perdita","un debito","un lutto"]},
+ a5:{axis:'r',th:[-0.3,0.35],opts:["considera chiusa la questione con il ritorno spontaneo del Lupo","prende atto di eventi storici non imputabili alla generazione presente","riconosce lo sterminio come atto proprio"]}
+};
+const ADDS={
+ parte:{text:"In nessun documento di quei secoli il Lupo compare come Parte.",on:s=>s.r<-0.15,off:s=>s.r>-0.05},
+ debito:{text:"Il debito si trasmette a ogni rappresentante della Specie umana che siede a questo tavolo.",on:s=>s.r<-0.3,off:s=>s.r>-0.2}
+};
+const GLOSS={
+  'nocivo:ripristinato':'ripristinato dalla Specie umana','nocivo:proposta':'proposta della Delegazione',
+  'crudeli:redatto':'cancellato dagli atti','crudeli:aperto':'resta agli atti','crudeli:barrato':'in discussione',
+  'add:on':'inserito','add:off':'ritirato'
+};
+
+const body=$('#body'), words=[], H={}, arts=[];
+function mk(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function addWords(p,text,kind,art){
+  text.split(/(\s+)/).forEach(part=>{
+    if(!part)return;
+    if(/^\s+$/.test(part)){p.appendChild(document.createTextNode(' '));return}
+    const e=mk('span','wd k-'+kind);e.textContent=part;p.appendChild(e);
+    const w={el:e,kind,text:part,ink:0,sens:kind==='x'?(part.length<=3?0.45:1):0,seed:Math.floor(Math.random()*part.length),vr:Math.floor(Math.random()*3),sig:'',wt:0,art};
+    words.push(w);art.words.push(w);
+  });
+}
+function special(p,t,id){
+  const G='<span class="gl"></span>';
+  if(t==='s'){
+    const e=mk('span','slot','<span class="br">[</span><span class="cur"></span><span class="br">]</span><span class="gh"></span>');
+    p.appendChild(e);
+    H[id]={el:e,cur:e.querySelector('.cur'),gh:e.querySelector('.gh'),brs:e.querySelectorAll('.br'),idx:-1,pend:null,pendT:0,changedAt:-999,ghBorn:-999,busy:0};
+  }else if(t==='a'){
+    const e=mk('span','add is-off','<span class="br">[</span><span class="cur"></span><span class="br">]</span>'+G);
+    p.appendChild(e);
+    H[id]={el:e,cur:e.querySelector('.cur'),gl:e.querySelector('.gl'),brs:e.querySelectorAll('.br'),on:false,pend:null,pendT:0,changedAt:-999,glBorn:-999,busy:0};
+  }else{
+    const e=mk('span','cp',id==='nocivo'
+      ?'<span class="old">nocivo</span> <span class="new">[individuo in disaccordo]</span>'+G
+      :'<span class="old">«questi animali crudeli»</span>'+G);
+    p.appendChild(e);
+    H[id]={el:e,gl:e.querySelector('.gl'),st:null,pend:null,pendT:0,glBorn:-999};
+  }
+}
+body.appendChild(mk('p','ttl','<b>Atto I</b> <i>Dello sterminio</i>'));
+ARTS.forEach(a=>{
+  const art={...a,words:[],f:.5};arts.push(art);
+  const p=mk('p',a.end?'art end':'art');
+  if(a.n){p.appendChild(mk('span','num','Art.&nbsp;'+a.n+'.'));p.appendChild(document.createTextNode(' '))}
+  const re=/\{(h|w|x|i)\|([^}]+)\}|\{(s|a|c):(\w+)\}/g;let last=0,m;
+  while((m=re.exec(a.src))){addWords(p,a.src.slice(last,m.index),'p',art);m[1]?addWords(p,m[2],m[1],art):special(p,m[3],m[4]);last=re.lastIndex}
+  addWords(p,a.src.slice(last),'p',art);body.appendChild(p);
+});
+const wolfWords=words.filter(w=>w.kind==='w'&&/^(lup|cuccioli)/i.test(w.text)).sort(()=>Math.random()-.5);
+
+/* ---------- slider ---------- */
+const KH=['allevare','costruire','proteggere','abbattere'], KW=['predare','disperdersi','avvicinarsi','branco'];
+const LAB={branco:'fare branco'};
+const EFF={allevare:'inchiostro',predare:'inchiostro',abbattere:'barratura',proteggere:'riformulazione',disperdersi:'voce',avvicinarsi:'voce',branco:'voce',costruire:'altri atti'};
+const INIT={allevare:62,costruire:50,proteggere:38,abbattere:64,predare:66,disperdersi:60,avvicinarsi:62,branco:58};
+const vals={...INIT}, tgt={...INIT}, inputs={};
+[[KH,'#sl-h'],[KW,'#sl-w']].forEach(([ks,sel])=>ks.forEach(k=>{
+  const r=mk('div','sl',`<label for="s-${k}">${LAB[k]||k}<small>→ ${EFF[k]}</small></label><output id="o-${k}"></output><input type="range" id="s-${k}" min="0" max="100" step="1" value="${vals[k]}">`);
+  $(sel).appendChild(r);inputs[k]=r.querySelector('input');
+  inputs[k].addEventListener('input',e=>{vals[k]=tgt[k]=+e.target.value;idle=0;autoPause=performance.now()+15000;});
+}));
+
+function derive(v){
+  const d=k=>(v[k]-50)/50, P=k=>Math.max(0,d(k));
+  return{
+    v:clamp((d('disperdersi')+d('avvicinarsi')+d('branco'))/3,-1,1),   // voce
+    c:clamp((P('predare')+P('allevare'))/2,0,1),                         // inchiostro
+    B:d('abbattere'),                                                    // barratura
+    r:d('proteggere')                                                    // riformulazione
+  };
+}
+function fmt(v,sign=1){const s=Math.abs(v).toFixed(2).replace('.',',');return sign?(v>=0?'+':'−')+s:s}
+
+/* ---------- riscrittura lettera per lettera ---------- */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function retype(h,newT){
+  const tok=++h.busy,c=h.cur,old=c.textContent;c.classList.add('fresh');
+  if(!reduce){
+    for(let i=old.length;i>=0;i--){if(tok!==h.busy)return;c.textContent=old.slice(0,i);await sleep(18)}
+    await sleep(160);
+    for(let i=1;i<=newT.length;i++){if(tok!==h.busy)return;c.textContent=newT.slice(0,i);await sleep(34)}
+  }
+  c.textContent=newT;setTimeout(()=>{if(tok===h.busy)c.classList.remove('fresh')},2200);
+}
+function wantIdx(v,th,cur,m=.05){const up=th.filter(t=>v>t+m).length,dn=th.filter(t=>v>t-m).length;if(up>cur)return up;if(dn<cur)return dn;return cur}
+function cpState(id,s,cur){
+  if(id==='nocivo'){if(s.B>.24)return'ripristinato';if(s.B<.14)return'proposta';return cur||'proposta'}
+  return'barrato';
+}
+function gloss(h,t){h.gl.textContent=t;h.glBorn=T}
+
+/* ---------- stato iniziale ---------- */
+let S=derive(vals), T=0, idle=0, autoOn=true, autoPause=0, speed=4, resting=false, cutting=false, nextRetarget=0;
+function setInitial(){
+  for(const id in SLOTS){const d=SLOTS[id],h=H[id];h.idx=wantIdx(S[d.axis],d.th,-1,0);h.cur.textContent=d.opts[h.idx]}
+  for(const id in ADDS){const a=ADDS[id],h=H[id];h.on=a.on(S);h.cur.textContent=a.text;h.el.classList.toggle('is-off',!h.on)}
+  for(const id of['nocivo','crudeli']){const h=H[id];h.st=cpState(id,S,null);h.el.className='cp st-'+h.st}
+  cutting=S.B>.2;
+  arts.forEach(a=>a.f=clamp(.5+a.front(S)*.6,0,1));
+  words.forEach(w=>{if(w.sens>.9&&Math.random()<.25)w.ink=.1+Math.random()*.3});
+}
+
+/* ---------- il corpo riempie la colonna ---------- */
+function fit(){
+  const saved=[];
+  for(const id in SLOTS){const h=H[id];{const t=h.cur.textContent;saved.push(()=>h.cur.textContent=t)}h.cur.textContent=SLOTS[id].opts.reduce((a,b)=>b.length>a.length?b:a)}
+  for(const id in ADDS){const h=H[id];{const c=h.el.className;saved.push(()=>h.el.className=c)}h.el.className='add'}
+  body.classList.add('fitting');
+  const kids=[...body.children],avail=body.clientHeight;
+  const used=()=>{const a=kids[0].getBoundingClientRect(),b=kids[kids.length-1].getBoundingClientRect();return(b.bottom-a.top)/(scaleK||1)};
+  let lo=14,hi=90;
+  for(let i=0;i<16;i++){const m=(lo+hi)/2;body.style.setProperty('--fs',m+'px');(used()<=avail*.93)?lo=m:hi=m}
+  body.style.setProperty('--fs',lo.toFixed(1)+'px');
+  body.classList.remove('fitting');saved.forEach(f=>f());
+}
+const frame=$('#frame'), col=$('#col');let scaleK=1;
+function setFormat(Hpx){
+  col.style.setProperty('--H',Hpx+'px');
+  frame.style.setProperty('--ar',1080/Hpx);frame.style.setProperty('--arw',1080);frame.style.setProperty('--arh',Hpx);
+  scale();fit();
+}
+function scale(){scaleK=frame.clientWidth/1080;col.style.transform=`scale(${scaleK})`}
+new ResizeObserver(scale).observe(frame);
+
+/* ---------- resa delle parole: fronte di voce + inchiostro ---------- */
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function renderWord(w,i,a){
+  const L=w.text.length;
+  // peso: fronte dell'articolo + spinta della parte
+  const N=a.words.length,pos=a.dir>0?i:N-1-i,b=a.f*N;           // b: confine in parole
+  const cover=clamp(b-pos,0,1);                                    // 1 dentro il fronte, 0 fuori
+  let base=cover>=1?740:220;
+  const push=0;
+  const wt=Math.round(clamp(base+push,200,800)/10)*10;
+  if(wt!==w.wt){w.wt=wt;w.el.style.fontWeight=wt;w.el.style.color=wt<330?'var(--ink3)':wt>560?'var(--ink)':'var(--ink2)'}
+  // contenuto: inchiostro ha la precedenza, altrimenti confine dentro la parola
+  let sig,html;
+  if(w.ink>=.04){
+    // sfumatura: massimo sul punto d'origine, si attenua lettera per lettera verso i bordi
+    const peak=Math.pow(w.ink,1.25)*8, R=1+w.ink*L*1.1, lv=[];
+    for(let j=0;j<L;j++){const d=Math.abs(j-w.seed)/R;lv.push(d>=1?0:clamp(Math.round(peak*(1-Math.pow(d,1.4))),0,8))}
+    sig='i'+lv.join('');
+    if(sig!==w.sig){
+      html='';let j=0;
+      while(j<L){let k=j;while(k<L&&lv[k]===lv[j])k++;const t=esc(w.text.slice(j,k));
+        html+=lv[j]?`<span class="bl" style="filter:url(#k${lv[j]}_${w.vr});font-weight:${Math.min(800,480+lv[j]*40)}">${t}</span>`:t;j=k}
+    }
+  }else if(cover>0&&cover<1&&L>1){
+    const k=clamp(Math.round(cover*L),1,L-1);
+    sig='f'+k+a.dir;
+    if(sig!==w.sig)html=a.dir>0?`<span class="hv">${esc(w.text.slice(0,k))}</span>${esc(w.text.slice(k))}`
+                               :`${esc(w.text.slice(0,L-k))}<span class="hv">${esc(w.text.slice(L-k))}</span>`;
+  }else sig='0';
+  if(sig!==w.sig){w.sig=sig;if(html!=null)w.el.innerHTML=html;else w.el.textContent=w.text}
+}
+
+/* ---------- ciclo ---------- */
+function step(dt,now){
+  const autoActive=autoOn&&now>autoPause;
+  if(autoActive){
+    if(now>nextRetarget){
+      const all=[...KH,...KW],n=1+Math.floor(Math.random()*3);
+      for(let i=0;i<n;i++){const k=all[Math.floor(Math.random()*all.length)];tgt[k]=Math.round(clamp(50+(Math.random()-.5)*2*(Math.random()<.35?48:30),0,100))}
+      nextRetarget=now+3000+Math.random()*5000;
+    }
+    for(const k in vals){const d=tgt[k]-vals[k];vals[k]+=Math.sign(d)*Math.min(Math.abs(d),12*dt/speed)}
+    idle=0;
+  }else idle+=dt;
+  resting=!autoActive&&idle>20;
+  if(resting){const f=1-Math.exp(-dt/45);for(const k in vals){vals[k]+=(50-vals[k])*f;tgt[k]=vals[k]}}
+  const raw=derive(vals),f=1-Math.exp(-dt/1.2);for(const k in raw)S[k]+=(raw[k]-S[k])*f;
+  // fronti: scorrono lenti verso il loro bersaglio
+  const ff=1-Math.exp(-dt/6);arts.forEach(a=>a.f+=(clamp(.5+a.front(S)*.6,0,1)-a.f)*ff);
+  // inchiostro
+  const bleeding=words.filter(w=>w.ink>.04).length,cap=Math.ceil(words.length*.09),over=S.c-.12;
+  words.forEach((w,i)=>{
+    if(over>0&&w.sens>0&&(w.ink>.04||bleeding<cap))w.ink+=over*w.sens*.1*dt;
+    if(over>0&&w.ink>.85){[words[i-1],words[i+1]].forEach(n=>{if(n&&n.kind!=='w'&&(n.ink>.04||bleeding<cap))n.ink+=over*.03*dt})}
+    if(over<=0||w.sens===0)w.ink-=w.ink*dt/(resting?40:140);
+    w.ink=clamp(w.ink,0,1);
+  });
+  T+=dt;
+}
+
+function tick(){ // 10 Hz
+  arts.forEach(a=>a.words.forEach((w,i)=>renderWord(w,i,a)));
+  if(S.B>.2)cutting=true;else if(S.B<.12)cutting=false;
+  const nCut=cutting?Math.round(clamp((S.B-.15)/.7,0,1)*wolfWords.length*.75):0;
+  wolfWords.forEach((w,i)=>w.el.classList.toggle('cut',i<nCut));
+  for(const id in SLOTS){
+    const d=SLOTS[id],h=H[id],want=wantIdx(S[d.axis],d.th,h.idx);
+    if(want!==h.idx){
+      if(h.pend!==want){h.pend=want;h.pendT=T}
+      else if(T-h.pendT>=2.5){const old=d.opts[h.idx];h.idx=want;h.pend=null;h.changedAt=T;h.gh.textContent=old;h.ghBorn=T;retype(h,d.opts[want])}
+    }else h.pend=null;
+    h.brs.forEach(b=>b.style.opacity=(.25+.75*Math.exp(-(T-h.changedAt)/30)).toFixed(2));
+    if(h.ghBorn>-999)h.gh.style.opacity=(.3+.65*Math.exp(-(T-h.ghBorn)/45)).toFixed(2);
+  }
+  for(const id in ADDS){
+    const a=ADDS[id],h=H[id],want=h.on?!a.off(S):a.on(S);
+    if(want!==h.on){
+      if(h.pend!==want){h.pend=want;h.pendT=T}
+      else if(T-h.pendT>=2.5){
+        h.on=want;h.pend=null;h.changedAt=T;
+        if(want){h.el.className='add';h.cur.textContent='';retype(h,a.text)}else h.el.className='add is-gone';
+        gloss(h,GLOSS[want?'add:on':'add:off']);
+      }
+    }else h.pend=null;
+    h.brs.forEach(b=>b.style.opacity=(.25+.75*Math.exp(-(T-h.changedAt)/30)).toFixed(2));
+  }
+  for(const id of['nocivo','crudeli']){
+    const h=H[id],want=cpState(id,S,h.st);
+    if(want!==h.st){
+      if(h.pend!==want){h.pend=want;h.pendT=T}
+      else if(T-h.pendT>=2.5){h.st=want;h.pend=null;h.el.className='cp st-'+want;gloss(h,GLOSS[id+':'+want])}
+    }else h.pend=null;
+  }
+  for(const id of['nocivo','crudeli','parte','debito']){const h=H[id];if(h.glBorn>-999)h.gl.style.opacity=(.18+.82*Math.exp(-(T-h.glBorn)/25)).toFixed(2)}
+  // banco
+  for(const k in vals){if(document.activeElement!==inputs[k])inputs[k].value=Math.round(vals[k]);$('#o-'+k).textContent=Math.round(vals[k])}
+  ['v','r'].forEach(k=>{const v=S[k],b=$('#b-'+k);b.style.left=(50+Math.min(v,0)*50)+'%';b.style.width=(Math.abs(v)*50)+'%';$('#v-'+k).textContent=fmt(v)});
+  $('#b-c').style.left='0';$('#b-c').style.width=(S.c*100)+'%';$('#v-c').textContent=fmt(S.c,0);
+  const ab=Math.round(vals.abbattere);$('#b-B').style.left='0';$('#b-B').style.width=ab+'%';$('#v-B').textContent=ab;
+  const st=$('#status'),aa=autoOn&&performance.now()>autoPause;
+  st.textContent=resting?'A riposo':aa?'Negoziazione automatica':autoOn?'Spinta manuale, l\'automatica riprende tra poco':`Spinta manuale · riposo tra ${Math.max(0,Math.ceil(20-idle))} s`;
+  st.style.setProperty('--st',resting?'var(--muted)':aa?'var(--wolf)':'var(--hum)');
+}
+
+let last=performance.now(),acc=0;
+function loop(now){const dtr=Math.min(.1,(now-last)/1000);last=now;step(dtr*speed,now);acc+=dtr;if(acc>=.1){acc=0;tick()}requestAnimationFrame(loop)}
+
+/* ---------- comandi ---------- */
+$('#auto').onclick=e=>{autoOn=!autoOn;e.target.setAttribute('aria-pressed',autoOn);autoPause=0;idle=0};
+$('#reset').onclick=()=>{for(const k in vals){vals[k]=tgt[k]=50}autoOn=false;$('#auto').setAttribute('aria-pressed','false');idle=0;words.forEach(w=>w.ink=0)};
+document.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{speed=+b.dataset.sp;document.querySelectorAll('[data-sp]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+document.querySelectorAll('[data-fm]').forEach(b=>b.onclick=()=>{setFormat(+b.dataset.fm);document.querySelectorAll('[data-fm]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+$('#inv').onclick=e=>{const on=col.classList.toggle('inv');e.target.setAttribute('aria-pressed',on)};
+
+setInitial();setFormat(1920);tick();
+(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{fit();requestAnimationFrame(loop)});
+</script>

@@ -1,6 +1,13 @@
 # Dispositivo di negoziazione · Alta Lessinia
 
-Prototipo di console multispecie. Ci sono 8 slider: 4 azioni di *Homo sapiens* e 4 comportamenti di *Canis lupus*, che sono insieme input e output. Muovendoli cambia una **tavola a matrice reale dell'Alta Lessinia**, e un bilancio mostra i quattro bisogni (cibo, spazio, sicurezza, discendenza) di entrambe le specie.
+Prototipo di console multispecie su due pagine:
+
+- **`index.html`, la tavola**: copia di `reference interfaccia.png`. A sinistra la legenda, al centro la tavola dell'Alta Lessinia, a destra **NECESSITÀ** e **CONFLITTI**. In NECESSITÀ ci sono lo stato della convivenza, i fattori del territorio, i verbi e quattro quadranti (Risorse, Spazi, Limiti, Famiglia): sopra *Homo sapiens*, sotto *Canis lupus*. In CONFLITTI ci sono lo stato del conflitto, il grafico tempo × intensità, l'ultimo evento e il verbale.
+- **`console.html`, gli 8 slider**: 4 azioni di *Homo sapiens* (CONTROLLARE, CUSTODIRE, COSTRUIRE, ALLEVARE) e 4 comportamenti di *Canis lupus* (NUTRIRSI, ATTRAVERSARE, AVVICINARSI, RIPRODURSI). In installazione va su un secondo schermo.
+
+- **`trattato.html`, il Trattato generativo**: l'Atto I. Il testo si modifica con gli stessi slider: la Voce la muovono ATTRAVERSARE, AVVICINARSI e RIPRODURSI; l'Inchiostro NUTRIRSI e ALLEVARE; la Barratura CONTROLLARE; la Riformulazione COSTRUIRE. Accanto alla colonna del ledwall c'è un banco che spiega che cosa modifica ogni slider. Decisioni e storia del prototipo sono in `trattato/docs/PROTOTIPO_ATTO1.md`, il testo integrale in `trattato/docs/TRATTATO.md`.
+
+La simulazione gira nella tavola. La console le manda i gesti e riceve lo stato (`js/link.js`, BroadcastChannel).
 
 La tavola non disegna i viventi. Mostra le loro **presenze**: dove passa *Canis lupus*, dove sta *Homo sapiens*, dove le due presenze si toccano (zone di conflitto) e dove si attraversano (corridoi e attraversamenti).
 
@@ -8,35 +15,47 @@ I testi dell'interfaccia seguono `LESSICO_TRATTATO.md`: l'interfaccia è scritta
 
 ## Come avviarlo
 
-Doppio clic su `index.html`. Funziona anche da `file://`, perché i dati sono un normale script (`data/lessinia.js`).
-
-In alternativa, con un server locale (serve per collegare MIDI o seriale):
+Con un server locale, che serve perché le due pagine si parlino in modo affidabile (e per MIDI e seriale):
 
 ```bash
 python3 -m http.server 8420
 ```
 
-poi apri <http://localhost:8420>.
+poi apri <http://localhost:8420/index.html> e <http://localhost:8420/console.html>, anche con il tasto `C` dalla tavola. Da `file://` le pagine provano a parlarsi attraverso localStorage, ma non è garantito.
+
+La tavola è disegnata sulle coordinate del riferimento (2576 × 1449) e si scala per riempire lo schermo senza deformarsi: rende al meglio su schermi 16:9.
 
 | Tasto | Azione |
 |---|---|
-| trascina uno slider | lo tieni: diventa input puro |
-| frecce su uno slider | ±2, con Maiusc ±10 |
-| `1`–`8` | livelli della tavola |
+| trascina uno slider (console) | lo tieni: diventa input puro |
+| frecce su uno slider (console) | ±2, con Maiusc ±10 |
+| `C` (tavola) | apre la console in una finestra |
+| `T` (tavola) | apre il trattato in una finestra |
+| `1` `2` `3` · `I` · `H` (trattato) | formato del ledwall (9:16, 1:2, 1:3) · inverti · nascondi il banco |
 | trascina sulla mappa | sposta la vista |
-| rotellina, pizzico, doppio clic | zoom (fino a 4×), `+` / `−` da tastiera |
-| `0` / **adatta** | la tavola riempie la sezione; **intera** la mostra tutta |
-| `L` / linguetta **Legenda** | apre e chiude la legenda a sinistra della mappa; ogni gruppo accende e spegne il suo livello |
+| rotellina, pizzico, doppio clic | zoom (fino a 4×), `+` / `−` / `0` da tastiera |
+| `U` (tavola) | mostra o nasconde le uccisioni documentate (dato reale, con il numero di eventi) |
 | `R` / **reset** | tutto a 50 |
-| `D` | debug: valori, ancore, statistiche della tavola e dei corridoi, MIDI/seriale |
+| `D` (tavola) | debug: valori, ancore, statistiche, MIDI/seriale |
 | `F` | schermo intero |
+
+## Il pannello
+
+- **Verbi**: il valore dello slider e la direzione dell'ultimo movimento. Il triangolo è pieno mentre lo slider si muove.
+- **Fattori** (Cani da guardiania, Pascolo, … Dispersione): sono le variabili del territorio di `calcolaStato()`. Passandoci sopra si legge il valore, e il piolo diventa rosso mentre il valore cambia.
+- **Quadranti**: le quattro necessità. In alto *Homo sapiens* (tacche nere), in basso *Canis lupus* (tacche brune). Risorse = cibo, Spazi = spazio, Limiti = incolumità, Famiglia = discendenza.
+- **Stato della convivenza**: combina lo squilibrio tra le necessità medie delle due specie e il conflitto. Se la convivenza è stabile, la scritta STABILE è scura e le linee sono dritte. Quando non lo è, la scritta si schiarisce, diventa INSTABILE e le linee vanno a zig-zag.
+- **Stato del conflitto**: 18 barre, quante ne dice il conflitto simulato.
+- **Grafico**: ogni punto è un evento della seduta. Asse x: il tempo (ultime 8 settimane, scorre). Asse y: l'intensità.
+- **Ultimo evento e verbale**: l'ultimo evento simulato (`js/eventi.js`, calendario simulato che parte dalla data di apertura, un giorno ogni 1,5 s) e le frasi più recenti della negoziazione (`DN.config.W`).
+- **Sulla tavola**: □ (animale da allevamento ucciso) e × (*Canis lupus* ucciso) sono gli eventi **simulati** delle ultime settimane. Le uccisioni documentate, reali, si accendono con `U`.
 
 Passando il mouse sulla tavola leggi la cella: uso del suolo, presenze, tipo di conflitto e costo per entrambi. Sui nodi e sui quadrati delle uccisioni documentate compaiono le schede.
 
 ## Come funziona la negoziazione
 
 1. **Lo slider resta dove lo lasci.** Ogni slider ha un punto di riposo, l'*ancora*. Quando lo rilasci, l'ancora diventa la posizione in cui l'hai lasciato.
-2. **Gli altri rispondono.** Ogni slider che nessuno tiene va verso `ancora + somma delle spinte`. La spinta di A su B è `peso(A→B) × (A − 50)`, con i pesi della matrice in `js/config.js`. Esempio: CUSTODIRE a 10 spinge NUTRIRSI verso bovini e ovicaprini (mandrie e greggi incustodite) e UCCIDERE in su (più animali uccisi, più richieste di abbattimento).
+2. **Gli altri rispondono.** Ogni slider che nessuno tiene va verso `ancora + somma delle spinte`. La spinta di A su B è `peso(A→B) × (A − 50)`, con i pesi della matrice in `js/config.js`. Esempio: CUSTODIRE a 10 spinge NUTRIRSI verso bovini e ovicaprini (mandrie e greggi incustodite) e CONTROLLARE in su (più animali uccisi, più richieste di abbattimento).
 3. **Si vede chi spinge chi.**
    - Sulla console, linee nere vanno dallo slider che spinge a quelli che rispondono. Lo spessore indica la forza della spinta, ▲/▼ la direzione.
    - Nel riquadro **Verbale**, nella colonna destra, c'è il motivo, in una frase.
@@ -55,19 +74,19 @@ Passando il mouse sulla tavola leggi la cella: uso del suolo, presenze, tipo di 
 - piccolo triangolo = roccia
 - tinta grigia piatta = paesi e contrade
 
-**Stile.** Pannello di sintetizzatore su fondo bianco: moduli grigi e cursori rossi come in `stile slider.png`. L'interfaccia è in IBM Plex Mono (variabile `--mono` in `css/style.css`); le scritte della mappa restano in Newsreader. Il LED di ogni modulo è rosso quando lo slider si muove da solo e nero quando è tenuto in mano.
+**Stile.** La tavola segue `reference interfaccia.png` (`css/style.css`, JetBrains Mono e IBM Plex Mono). Le presenze sono aree piene: beige per *Canis lupus*, grigio per *Homo sapiens*, rosso con alone per i conflitti. La console resta un pannello di sintetizzatore come in `stile slider.png` (`css/console.css`): il LED di ogni modulo è rosso quando lo slider si muove da solo, nero quando è tenuto in mano.
 
 Strade, sentieri, acque, isoipse (TINITALY), malghe e paesi sono vettori reali.
 
 **Cosa cambia con gli slider:**
 - **ALLEVARE**: sotto 55 i pascoli più lontani dalle malghe si abbandonano e diventano arbusteto. Sopra 55 il pascolo si allarga attorno alle malghe.
 - **COSTRUIRE**: sopra 45 i paesi crescono lungo le strade. Le strade locali più lontane dai paesi si chiudono quando COSTRUIRE scende (*ritirarsi*).
-- **Presenza di *Canis lupus*** (bruno): è un campo continuo. Sale con il bosco e la quiete, scende vicino a paesi e strade, è attratta dai pascoli se NUTRIRSI tende a bovini e ovicaprini e mandrie e greggi sono incustodite. L'area mostrata cresce con il numero di lupi. Con FARE BRANCO basso diventa frammentata e mobile, con contorno tratteggiato. PERCORRERE riduce la distanza che il lupo tiene dai paesi.
-- **Presenza di *Homo sapiens*** (blu): paesi, pascoli attivi e strade.
+- **Presenza di *Canis lupus*** (beige): è un campo continuo. Sale con il bosco e la quiete, scende vicino a paesi e strade, è attratta dai pascoli se NUTRIRSI tende a bovini e ovicaprini e mandrie e greggi sono incustodite. L'area mostrata cresce con il numero di lupi. Con RIPRODURSI basso diventa frammentata. AVVICINARSI riduce la distanza che il lupo tiene dai paesi.
+- **Presenza di *Homo sapiens*** (grigio): paesi, pascoli attivi e strade.
 - **Zone di conflitto** (rosso, l'unico colore d'accento). Sono di tre tipi:
   - *uccisioni di bovini e ovicaprini*: pascolo incustodito dentro la zona del lupo;
-  - *margine delle contrade*: con PERCORRERE alto;
-  - *trappola* (×): con UCCIDERE sopra 50, vicino a pascoli e paesi.
+  - *margine delle contrade*: con AVVICINARSI alto;
+  - *trappola* (×): con CONTROLLARE sopra 50, vicino a pascoli e paesi.
 
   Dove il pascolo è custodito compare invece un segno senza conflitto registrato.
 - **Corridoi e attraversamenti**: cammini a costo minimo tra le aree di presenza del lupo e verso il bordo della tavola, tanti quanto dice ATTRAVERSARE. Ogni punto in cui una strada aperta taglia un corridoio o un'area del lupo è un attraversamento: *interrotto*, *trappola*, oppure *passaggio per altre specie* se CUSTODIRE è alto.
@@ -84,18 +103,27 @@ La finestra (`W, S, E, N`) e il lato della cella (`CELLA_M`) sono in cima allo s
 ## Struttura
 
 ```
-index.html
-css/style.css
+index.html              tavola, legenda, NECESSITÀ, CONFLITTI
+console.html            gli 8 slider
+trattato.html           Trattato generativo, Atto I
+css/trattato.css        trattato
+js/trattato.js          testo marcato, quattro modifiche, banco
+trattato/               docs (TRATTATO.md, PROTOTIPO_ATTO1.md), riferimenti, prototipo originale
+css/style.css           tavola
+css/console.css         console
 data/lessinia.js        griglia e vettori reali (generato)
 tools/prepara_dati.py   dai GeoJSON dell'Atlante alla griglia
 js/config.js            matrice W con le frasi delle risposte, tempi, parametri di tavola e corridoi
 js/util.js              rumore, heap, A*, campi di distanza
 js/input.js             SliderBus (stato separato dalla sorgente) + adattatori MIDI e seriale
+js/link.js              collegamento tavola ↔ console
+js/eventi.js            calendario simulato ed eventi di conflitto
+js/console.js           la pagina degli slider
 js/simulation.js        ancore, spinte, calcolaStato(): tutte le formule di stato e bisogni
 js/territory.js         tavola reale, pascoli, paesi, strade, presenze, conflitti
 js/corridors.js         corridoi, attraversamenti, passaggi per altre specie, nodi
 js/render.js            tavola a matrice su Canvas 2D
-js/ui.js                console, linee "chi spinge chi", registro, bilancio, legenda, schede
+js/ui.js                pannello NECESSITÀ / CONFLITTI, verbale, schede sulla tavola
 js/main.js              simulazione a 10 Hz, disegno a ogni frame
 ```
 

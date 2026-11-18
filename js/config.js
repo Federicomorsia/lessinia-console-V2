@@ -18,11 +18,11 @@
       { id: 'allevare',    nome: 'ALLEVARE',    sx: 'lasciare i pascoli', dx: 'estendere i pascoli',   animale: 'umano', coppia: 'cibo' },
       { id: 'costruire',   nome: 'COSTRUIRE',   sx: 'ritirarsi',         dx: 'insediarsi',             animale: 'umano', coppia: 'spazio' },
       { id: 'proteggere',  nome: 'CUSTODIRE',   sx: 'lasciare incustodito', dx: 'vegliare',            animale: 'umano', coppia: 'limite' },
-      { id: 'abbattere',   nome: 'UCCIDERE',    sx: 'lasciar passare',   dx: 'uccidere',               animale: 'umano', coppia: 'discendenza' },
+      { id: 'abbattere',   nome: 'CONTROLLARE', sx: 'lasciar passare',   dx: 'uccidere',               animale: 'umano', coppia: 'discendenza' },
       { id: 'predare',     nome: 'NUTRIRSI',    sx: 'caprioli, altri ungulati', dx: 'bovini, ovicaprini', animale: 'lupo', coppia: 'cibo' },
       { id: 'disperdersi', nome: 'ATTRAVERSARE', sx: 'sostare',          dx: 'percorrere lunghe distanze', animale: 'lupo', coppia: 'spazio' },
-      { id: 'avvicinarsi', nome: 'PERCORRERE',  sx: 'lontano dalle contrade', dx: 'tra le contrade',   animale: 'lupo',  coppia: 'limite' },
-      { id: 'fareBranco',  nome: 'FARE BRANCO', sx: 'sciogliersi',       dx: 'riprodursi',             animale: 'lupo',  coppia: 'discendenza' }
+      { id: 'avvicinarsi', nome: 'AVVICINARSI', sx: 'lontano dalle contrade', dx: 'tra le contrade',   animale: 'lupo',  coppia: 'limite' },
+      { id: 'fareBranco',  nome: 'RIPRODURSI', sx: 'sciogliersi',       dx: 'riprodursi',             animale: 'lupo',  coppia: 'discendenza' }
     ],
 
     COPPIE: [
@@ -132,6 +132,16 @@
       SOGLIA_TRAPPOLA: 0.52,
       RAGGIO_PRESSIONE: 5,
       PENALITA_INTERRUZIONE: 0.8
+    },
+
+    /* ---------------------------------------------------------------
+       Eventi della seduta (pannello CONFLITTI)
+       Il calendario è simulato: parte dalla data di apertura della pagina.
+       --------------------------------------------------------------- */
+    EVENTI: {
+      SECONDI_PER_GIORNO: 1.5,      // un giorno simulato ogni 1,5 s
+      FINESTRA_GIORNI: 56,          // ampiezza dell'asse del tempo nel grafico
+      MAX: 120
     },
 
     /* ---------------------------------------------------------------

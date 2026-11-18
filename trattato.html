@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trattato generativo</title>
+<meta name="description" content="Atto I del Trattato generativo: il testo si modifica con gli slider della console (console.html), letti dalla tavola (index.html).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/trattato.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="fdefs"></defs></svg>
+
+  <div class="app">
+    <!-- la colonna del ledwall: solo il testo -->
+    <div class="stage">
+      <div class="frame" id="frame">
+        <div class="col" id="col" lang="it"><div class="body" id="body"></div></div>
+      </div>
+    </div>
+
+    <!-- che cosa modifica il testo, e perché -->
+    <aside class="banco" aria-label="Che cosa modifica il testo">
+      <header class="testa">
+        <h1>TRATTATO</h1>
+        <p class="sub">Atto I · Dello sterminio</p>
+        <p id="collegamento" class="collegamento assente">in attesa della tavola</p>
+      </header>
+      <p class="regola-generale">Ogni modifica del testo ha una sola causa. Ogni slider della console muove una sola modifica. Passa sopra un riquadro per vedere nel testo le parole che tocca.</p>
+      <div id="mods"></div>
+      <p class="nonagisce" id="nonagisce"></p>
+      <section class="registro">
+        <h2>Ultime modifiche</h2>
+        <ol id="registro"></ol>
+      </section>
+      <p class="tasti">1 · 2 · 3 formato del ledwall (9:16, 1:2, 1:3) · I inverti · H nascondi il pannello · F schermo intero</p>
+    </aside>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/link.js"></script>
+  <script src="js/trattato.js"></script>
+</body>
+</html>

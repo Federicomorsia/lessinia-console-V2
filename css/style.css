@@ -1,0 +1,130 @@
+/* =====================================================================
+   Tavola (index.html), copia di "reference interfaccia.png".
+   La pagina è un palco di 2576 × 1449 unità, come il riferimento:
+   --u è la grandezza di un'unità, scelta perché il palco riempia lo
+   schermo senza deformarsi. Legenda e pannello sono un unico SVG con lo
+   stesso sistema di coordinate; la tavola è un canvas nel suo riquadro.
+   Gli slider stanno in console.html (css/console.css).
+   ===================================================================== */
+:root {
+  color-scheme: light;
+  --u: min(calc(100vw / 2576), calc(100vh / 1449));
+  --carta: #FFFFFF;
+  --inchiostro: #2E2A29;
+  --grigio: #6F6F6F;
+  --rosso: #EE4747;
+  --jet: "JetBrains Mono", "IBM Plex Mono", Menlo, Consolas, monospace;
+  --plex: "IBM Plex Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--carta);
+  color: var(--inchiostro);
+  font-family: var(--jet);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(2576 * var(--u)); height: calc(1449 * var(--u));
+  transform: translate(-50%, -50%);
+}
+#carta { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ---------- testi dell'SVG ---------- */
+#carta text { font-family: var(--jet); fill: var(--inchiostro); }
+#carta .titolo-leg { font-size: 38px; font-weight: 800; letter-spacing: -0.5px; }
+#carta .titolo { font-size: 54px; font-weight: 800; letter-spacing: -1px; }
+#carta .voce-b { font-size: 13.2px; font-weight: 700; }
+#carta .voce { font-size: 13.2px; }
+#carta .sezione { font-size: 16px; }
+#carta .divisore { stroke: #9A9A9A; stroke-width: 1; fill: none; }
+#carta .etichetta { font-size: 16px; }
+#carta .stato-conv { font-size: 18px; letter-spacing: 1.5px; text-anchor: middle; transition: fill .6s; }
+
+/* schema delle necessità */
+#carta .filo { stroke: #8C8C8C; stroke-width: 1; fill: none; }
+#carta .scatola { fill: #fff; stroke: #3A3A3A; stroke-width: 1.3; }
+#carta .scatola-t { font-size: 13.4px; text-anchor: middle; }
+#carta .verbo-n { font-family: var(--plex); font-size: 17.5px; }
+#carta .verbo-t { font-size: 13.4px; }
+#carta .verbo-f { fill: none; stroke: var(--inchiostro); stroke-width: 1.4; stroke-linejoin: round; }
+#carta .verbo-f.muove { fill: var(--inchiostro); }
+#carta .piolo { fill: #3A3534; transition: fill .4s; }
+#carta .piolo.lupo { fill: #B5A398; }
+#carta .piolo.cambia { fill: var(--rosso); }
+#carta .quadrante-nome { font-size: 18.4px; text-anchor: middle; }
+#carta .quadrante-v { font-size: 13px; text-anchor: middle; font-variant-numeric: tabular-nums; }
+#carta .quadrante-v.lupo { fill: #A89287; }
+#carta .tacca { stroke-width: 5.5; }
+#carta .tag { cursor: default; }
+
+/* conflitti */
+#carta .griglia { stroke: #8C8C8C; stroke-width: 1; fill: none; }
+#carta .linea-sez { stroke: #4A4A4A; stroke-width: 1.2; }
+#carta .ev-titolo { font-family: var(--plex); font-size: 13.3px; font-weight: 700; fill: var(--rosso); }
+#carta .ev-testo { font-family: var(--plex); font-size: 16px; fill: #1F1D1D; }
+#carta .verbale { font-family: var(--plex); font-size: 13.4px; fill: var(--grigio); letter-spacing: 0.2px; }
+#carta .verbale.nuova { fill: #3E3A39; }
+#carta tspan.it { font-style: italic; }
+
+/* ---------- tavola ---------- */
+#map-wrap {
+  position: absolute;
+  left: calc(273 * var(--u)); top: calc(67 * var(--u));
+  width: calc(1407 * var(--u)); height: calc(1316 * var(--u));
+  overflow: hidden; border-radius: calc(6 * var(--u));
+  background: var(--carta);
+}
+#map { position: absolute; inset: 0; display: block; cursor: grab; touch-action: none; }
+#map.trascina { cursor: grabbing; }
+
+.map-scala {
+  position: absolute; right: calc(43 * var(--u)); bottom: calc(33 * var(--u)); z-index: 4; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: calc(4 * var(--u));
+  font-size: calc(12 * var(--u)); letter-spacing: .04em; color: var(--inchiostro);
+}
+.map-scala-barra {
+  display: block; height: calc(5 * var(--u));
+  border: calc(1.6 * var(--u)) solid var(--inchiostro); border-top: 0;
+}
+
+/* schede sulla tavola */
+.tooltip {
+  position: absolute; z-index: 5; pointer-events: none;
+  max-width: 320px;
+  background: var(--carta); border: 1px solid var(--inchiostro);
+  padding: 9px 11px; font-family: var(--plex); font-size: 11.5px; line-height: 1.4;
+}
+.tooltip.conflitto { border-left: 4px solid var(--rosso); }
+.tooltip.convivenza { border-left: 4px solid var(--inchiostro); }
+.tt-title { font-family: var(--jet); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
+.tt-sub { color: #555; margin: -2px 0 5px; }
+.tt-row { display: grid; grid-template-columns: 86px 1fr; gap: 8px; margin-top: 3px; }
+.tt-row b { font-weight: 500; font-size: 11px; color: #555; text-transform: uppercase; }
+.tt-row b.specie { font-style: italic; text-transform: none; }
+.tt-sep { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin: 8px 0 2px; padding-top: 6px; border-top: 1px solid #D0D0D0; }
+.tooltip.conflitto .tt-sep { color: var(--rosso); }
+
+/* ---------- debug ---------- */
+#debug {
+  position: fixed; top: 24px; left: 24px; z-index: 20;
+  background: var(--carta); border: 1px solid var(--inchiostro);
+  padding: 10px 12px; max-height: calc(100vh - 48px); overflow: auto;
+  font-family: var(--plex);
+}
+.debug-head { font-weight: 600; font-size: 12px; margin-bottom: 6px; }
+.debug-head span { font-weight: 400; color: #808080; }
+#debug pre { margin: 0; font-family: var(--plex); font-size: 11px; line-height: 1.35; }
+.debug-dev { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+#dev-status { font-size: 11px; color: #555; width: 100%; }
+.hint { font-size: 10.5px; color: #808080; margin: 8px 0 0; }
+button {
+  font-family: var(--plex); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+  background: #E2E2E2; color: var(--inchiostro); border: 0; border-radius: 4px; padding: 7px 14px; cursor: pointer;
+}
+button:hover { background: var(--inchiostro); color: var(--carta); }
+button:focus-visible { outline: 2px solid var(--inchiostro); outline-offset: 2px; }

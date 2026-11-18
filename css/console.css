@@ -314,3 +314,21 @@ svg.link-arcs text { font-family: var(--mono); font-size: 10px; fill: var(--lupo
   .bil-row { grid-template-columns: 42px 1fr 84px 1fr 42px; gap: 4px; }
   .bil-label { font-size: 10.5px; letter-spacing: 0; }
 }
+
+/* =====================================================================
+   Pagina della console (console.html): solo testata e slider.
+   La tavola, i bisogni e i conflitti stanno in index.html.
+   ===================================================================== */
+#app.app-console {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "top" "console";
+  --track-h: clamp(160px, calc(100vh - 330px), 640px);
+}
+.app-console #console { align-self: end; }
+.collegamento { font-size: 11px; color: var(--inchiostro-2); }
+.collegamento.attivo::before { content: "● "; color: var(--rosso); }
+.collegamento.assente::before { content: "○ "; }
+@media (max-width: 1100px) {
+  #app.app-console { grid-template-rows: auto auto; grid-template-areas: "top" "console"; }
+}
