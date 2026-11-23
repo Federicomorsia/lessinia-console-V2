@@ -1,108 +1,287 @@
 <!doctype html>
-<html lang="it">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dispositivo di negoziazione</title>
-<meta name="description" content="Tavola dell'Alta Lessinia: presenze di Homo sapiens e Canis lupus, necessità delle due specie e conflitti della seduta. Gli slider sono in console.html.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400;1,600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <!-- La pagina è disegnata sulle coordinate di "reference interfaccia.png" (2576 × 1449):
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Dispositivo di negoziazione</title>
+		<meta
+			name="description"
+			content="Tavola dell'Alta Lessinia: presenze di Homo sapiens e Canis lupus, necessità delle due specie e conflitti della seduta. Gli slider sono in console.html."
+		/>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400;1,600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="css/style.css" />
+	</head>
+	<body>
+		<!-- La pagina è disegnata sulle coordinate di "reference interfaccia.png" (2576 × 1449):
        1 unità = var(--u), che scala tutto per riempire lo schermo. -->
-  <div id="stage">
-    <svg id="carta" viewBox="0 0 2576 1449" aria-hidden="false" role="img" aria-label="Legenda, necessità e conflitti">
-      <defs>
-        <!-- segni della legenda, centrati in 0,0 -->
-        <g id="s-canis"><rect x="-20" y="-8.5" width="40" height="17" rx="8.5" fill="#DFD7D3" stroke="#A99489" stroke-width="4"/></g>
-        <g id="s-homo"><rect x="-20" y="-8.5" width="40" height="17" rx="8.5" fill="#ABAAA9" stroke="#3E3837" stroke-width="4"/></g>
-        <g id="s-conflitto"><rect x="-20" y="-8.5" width="40" height="17" rx="8.5" fill="#EE4747" stroke="#F59A90" stroke-width="4"/></g>
-        <g id="s-strada"><path d="M-20 -4H20M-20 4H20" stroke="#5B5351" stroke-width="2.4" fill="none"/></g>
-        <g id="s-sentiero"><path d="M-20 0H20" stroke="#5B5351" stroke-width="2.4" fill="none"/></g>
-        <g id="s-malga"><path d="M-8.5 -1.5L0 -9L8.5 -1.5V8.5H-8.5Z" fill="#fff" stroke="#1D1B1B" stroke-width="2.6" stroke-linejoin="round"/></g>
-        <g id="s-corridoio"><path d="M-22 -3.4H24M-22 3.4H24" stroke="#C3A595" stroke-width="3" stroke-dasharray="5 6" stroke-linecap="round" fill="none"/></g>
-        <g id="s-conteso"><use href="#s-corridoio"/><path d="M-10 9L-2 -9M1 9L9 -9" stroke="#EE4747" stroke-width="2.6" stroke-linecap="round"/></g>
-        <g id="s-trappola"><use href="#s-corridoio"/><path d="M-8 -6H8L0 7Z" fill="#fff" stroke="#EE4747" stroke-width="2.6" stroke-linejoin="round"/></g>
-        <g id="s-ucciso"><path d="M-7 -9L7 9M7 -9L-7 9" stroke="#EE4747" stroke-width="3" fill="none"/></g>
-        <g id="s-bestiame"><rect x="-8" y="-8" width="16" height="16" fill="#fff" stroke="#EE4747" stroke-width="3"/></g>
-        <g id="s-pascolo-segno" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M-10 -12V0M-16 -6L-10 0L-4 -6M10 -12V0M4 -6L10 0L16 -6M0 -1V11M-6 5L0 11L6 5"/></g>
-        <g id="s-pascolo" stroke="#1D1B1B"><use href="#s-pascolo-segno"/></g>
-        <g id="s-pascolo-rischio" stroke="#EE4747"><use href="#s-pascolo-segno"/></g>
-        <g id="s-isoipse"><path d="M-24 0H24" stroke="#6D6D6D" stroke-width="2.4" fill="none"/></g>
-        <g id="s-bosco" fill="none" stroke="#2E2A29" stroke-width="2.4" stroke-linejoin="miter"><path d="M-15 -6L-9 -12L-3 -6M-15 -1L-9 -7L-3 -1M3 -6L9 -12L15 -6M3 -1L9 -7L15 -1M-6 7L0 1L6 7M-6 12L0 6L6 12"/></g>
-        <g id="s-prateria"><path d="M-16 6L-10 -6M-9 6L-3 -6M3 6L9 -6M10 6L16 -6" stroke="#2E2A29" stroke-width="2.4" fill="none"/></g>
-      </defs>
+		<div id="stage">
+			<svg
+				id="carta"
+				viewBox="0 0 2576 1449"
+				aria-hidden="false"
+				role="img"
+				aria-label="Legenda, necessità e conflitti"
+			>
+				<defs>
+					<!-- segni della legenda, centrati in 0,0 -->
+					<g id="s-canis">
+						<rect
+							x="-20"
+							y="-8.5"
+							width="40"
+							height="17"
+							rx="8.5"
+							fill="#DFD7D3"
+							stroke="#A99489"
+							stroke-width="4"
+						/>
+					</g>
+					<g id="s-homo">
+						<rect
+							x="-20"
+							y="-8.5"
+							width="40"
+							height="17"
+							rx="8.5"
+							fill="#ABAAA9"
+							stroke="#3E3837"
+							stroke-width="4"
+						/>
+					</g>
+					<g id="s-conflitto">
+						<rect
+							x="-20"
+							y="-8.5"
+							width="40"
+							height="17"
+							rx="8.5"
+							fill="#EE4747"
+							stroke="#F59A90"
+							stroke-width="4"
+						/>
+					</g>
+					<g id="s-strada">
+						<path
+							d="M-20 -4H20M-20 4H20"
+							stroke="#5B5351"
+							stroke-width="2.4"
+							fill="none"
+						/>
+					</g>
+					<g id="s-sentiero">
+						<path
+							d="M-20 0H20"
+							stroke="#5B5351"
+							stroke-width="2.4"
+							fill="none"
+						/>
+					</g>
+					<g id="s-malga">
+						<path
+							d="M-8.5 -1.5L0 -9L8.5 -1.5V8.5H-8.5Z"
+							fill="#fff"
+							stroke="#1D1B1B"
+							stroke-width="2.6"
+							stroke-linejoin="round"
+						/>
+					</g>
+					<g id="s-corridoio">
+						<path
+							d="M-22 -3.4H24M-22 3.4H24"
+							stroke="#C3A595"
+							stroke-width="3"
+							stroke-dasharray="5 6"
+							stroke-linecap="round"
+							fill="none"
+						/>
+					</g>
+					<g id="s-conteso">
+						<use href="#s-corridoio" />
+						<path
+							d="M-10 9L-2 -9M1 9L9 -9"
+							stroke="#EE4747"
+							stroke-width="2.6"
+							stroke-linecap="round"
+						/>
+					</g>
+					<g id="s-trappola">
+						<use href="#s-corridoio" />
+						<path
+							d="M-8 -6H8L0 7Z"
+							fill="#fff"
+							stroke="#EE4747"
+							stroke-width="2.6"
+							stroke-linejoin="round"
+						/>
+					</g>
+					<g id="s-ucciso">
+						<path
+							d="M-7 -9L7 9M7 -9L-7 9"
+							stroke="#EE4747"
+							stroke-width="3"
+							fill="none"
+						/>
+					</g>
+					<g id="s-bestiame">
+						<rect
+							x="-8"
+							y="-8"
+							width="16"
+							height="16"
+							fill="#fff"
+							stroke="#EE4747"
+							stroke-width="3"
+						/>
+					</g>
+					<g
+						id="s-pascolo-segno"
+						fill="none"
+						stroke-width="2.4"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path
+							d="M-10 -12V0M-16 -6L-10 0L-4 -6M10 -12V0M4 -6L10 0L16 -6M0 -1V11M-6 5L0 11L6 5"
+						/>
+					</g>
+					<g id="s-pascolo" stroke="#1D1B1B"><use href="#s-pascolo-segno" /></g>
+					<g id="s-pascolo-rischio" stroke="#EE4747">
+						<use href="#s-pascolo-segno" />
+					</g>
+					<g id="s-isoipse">
+						<path
+							d="M-24 0H24"
+							stroke="#6D6D6D"
+							stroke-width="2.4"
+							fill="none"
+						/>
+					</g>
+					<g
+						id="s-bosco"
+						fill="none"
+						stroke="#2E2A29"
+						stroke-width="2.4"
+						stroke-linejoin="miter"
+					>
+						<path
+							d="M-15 -6L-9 -12L-3 -6M-15 -1L-9 -7L-3 -1M3 -6L9 -12L15 -6M3 -1L9 -7L15 -1M-6 7L0 1L6 7M-6 12L0 6L6 12"
+						/>
+					</g>
+					<g id="s-prateria">
+						<path
+							d="M-16 6L-10 -6M-9 6L-3 -6M3 6L9 -6M10 6L16 -6"
+							stroke="#2E2A29"
+							stroke-width="2.4"
+							fill="none"
+						/>
+					</g>
+				</defs>
 
-      <!-- ===================== LEGENDA ===================== -->
-      <g id="legenda" class="leg">
-        <text class="titolo-leg" x="82" y="96">LEGENDA</text>
+				<!-- ===================== LEGENDA ===================== -->
+				<g id="legenda" class="leg">
+					<text class="titolo-leg" x="82" y="96">LEGENDA</text>
 
-        <use href="#s-canis" x="104" y="163"/>
-        <text class="voce-b" x="149" y="160.5">Canis</text><text class="voce-b" x="149" y="176.5">lupus</text>
-        <use href="#s-homo" x="104" y="222"/>
-        <text class="voce-b" x="149" y="219.5">Homo</text><text class="voce-b" x="149" y="236.5">sapiens</text>
-        <use href="#s-conflitto" x="104" y="281"/>
-        <text class="voce-b" x="149" y="278.5">Aree di</text><text class="voce-b" x="149" y="294.5">conflitto</text>
+					<use href="#s-canis" x="104" y="163" />
+					<text class="voce-b" x="149" y="160.5">Canis</text>
+					<text class="voce-b" x="149" y="176.5">lupus</text>
+					<use href="#s-homo" x="104" y="222" />
+					<text class="voce-b" x="149" y="219.5">Homo</text>
+					<text class="voce-b" x="149" y="236.5">sapiens</text>
+					<use href="#s-conflitto" x="104" y="281" />
+					<text class="voce-b" x="149" y="278.5">Aree di</text>
+					<text class="voce-b" x="149" y="294.5">conflitto</text>
 
-        <text class="sezione" x="81" y="394">Collegamenti</text><text class="sezione" x="81" y="416">e strutture</text>
-        <use href="#s-strada" x="102" y="460"/><text class="voce" x="149" y="465.5">Strada</text>
-        <use href="#s-sentiero" x="102" y="500"/><text class="voce" x="149" y="504.5">Sentiero</text>
-        <use href="#s-malga" x="101" y="550"/><text class="voce" x="149" y="546.5">Malga</text><text class="voce" x="149" y="563.5">attiva</text>
-        <use href="#s-corridoio" x="104" y="601"/><text class="voce" x="149" y="605.5">Corridoio</text>
-        <use href="#s-pascolo" x="105" y="646"/><text class="voce" x="149" y="650.5">Pascolo</text>
-        <path class="divisore" d="M71 688H243"/>
+					<text class="sezione" x="81" y="394">Collegamenti</text>
+					<text class="sezione" x="81" y="416">e strutture</text>
+					<use href="#s-strada" x="102" y="460" />
+					<text class="voce" x="149" y="465.5">Strada</text>
+					<use href="#s-sentiero" x="102" y="500" />
+					<text class="voce" x="149" y="504.5">Sentiero</text>
+					<use href="#s-malga" x="101" y="550" />
+					<text class="voce" x="149" y="546.5">Malga</text>
+					<text class="voce" x="149" y="563.5">attiva</text>
+					<use href="#s-corridoio" x="104" y="601" />
+					<text class="voce" x="149" y="605.5">Corridoio</text>
+					<use href="#s-pascolo" x="105" y="646" />
+					<text class="voce" x="149" y="650.5">Pascolo</text>
+					<path class="divisore" d="M71 688H243" />
 
-        <text class="sezione" x="80" y="746">Criticità</text><text class="sezione" x="80" y="768">e conflitti</text>
-        <use href="#s-conteso" x="104" y="816"/><text class="voce" x="150" y="813.5">Corridoio</text><text class="voce" x="150" y="829">conteso</text>
-        <use href="#s-trappola" x="104" y="875"/><text class="voce" x="150" y="879.5">Trappola</text>
-        <use href="#s-ucciso" x="105" y="930"/><text class="voce" x="150" y="927.5">Canis lupus</text><text class="voce" x="150" y="943.5">ucciso</text>
-        <use href="#s-bestiame" x="105" y="989"/><text class="voce" x="150" y="986">Bestiame</text><text class="voce" x="150" y="1002">mangiato</text>
-        <use href="#s-pascolo-rischio" x="105" y="1047"/><text class="voce" x="150" y="1044.5">Pascolo a</text><text class="voce" x="150" y="1060.5">rischio</text>
-        <path class="divisore" d="M71 1117H243"/>
+					<text class="sezione" x="80" y="746">Criticità</text>
+					<text class="sezione" x="80" y="768">e conflitti</text>
+					<use href="#s-conteso" x="104" y="816" />
+					<text class="voce" x="150" y="813.5">Corridoio</text>
+					<text class="voce" x="150" y="829">conteso</text>
+					<use href="#s-trappola" x="104" y="875" />
+					<text class="voce" x="150" y="879.5">Trappola</text>
+					<use href="#s-ucciso" x="105" y="930" />
+					<text class="voce" x="150" y="927.5">Canis lupus</text>
+					<text class="voce" x="150" y="943.5">ucciso</text>
+					<use href="#s-bestiame" x="105" y="989" />
+					<text class="voce" x="150" y="986">Bestiame</text>
+					<text class="voce" x="150" y="1002">mangiato</text>
+					<use href="#s-pascolo-rischio" x="105" y="1047" />
+					<text class="voce" x="150" y="1044.5">Pascolo a</text>
+					<text class="voce" x="150" y="1060.5">rischio</text>
+					<path class="divisore" d="M71 1117H243" />
 
-        <text class="sezione" x="80" y="1140">Elementi del</text><text class="sezione" x="80" y="1162">territorio</text>
-        <use href="#s-isoipse" x="105" y="1203"/><text class="voce" x="150" y="1207.5">Isoipse</text>
-        <use href="#s-bosco" x="105" y="1252"/><text class="voce" x="150" y="1256.5">Bosco</text>
-        <use href="#s-prateria" x="105" y="1300"/><text class="voce" x="150" y="1304.5">Prateria</text>
-      </g>
+					<text class="sezione" x="80" y="1140">Elementi del</text>
+					<text class="sezione" x="80" y="1162">territorio</text>
+					<use href="#s-isoipse" x="105" y="1203" />
+					<text class="voce" x="150" y="1207.5">Isoipse</text>
+					<use href="#s-bosco" x="105" y="1252" />
+					<text class="voce" x="150" y="1256.5">Bosco</text>
+					<use href="#s-prateria" x="105" y="1300" />
+					<text class="voce" x="150" y="1304.5">Prateria</text>
+				</g>
 
-      <!-- ===================== NECESSITÀ e CONFLITTI (costruiti da js/ui.js) ===================== -->
-      <g id="pannello"></g>
-    </svg>
+				<!-- ===================== NECESSITÀ e CONFLITTI (costruiti da js/ui.js) ===================== -->
+				<g id="pannello"></g>
+			</svg>
 
-    <main id="map-wrap">
-      <canvas id="map" aria-label="Tavola dell'Alta Lessinia: trascina per spostarti, rotellina o pizzico per lo zoom"></canvas>
-      <div id="tooltip" class="tooltip" hidden></div>
-      <div class="map-scala" aria-hidden="true"><span class="map-scala-km"></span><span class="map-scala-barra"></span></div>
-    </main>
-  </div>
+			<main id="map-wrap">
+				<canvas
+					id="map"
+					aria-label="Tavola dell'Alta Lessinia: trascina per spostarti, rotellina o pizzico per lo zoom"
+				></canvas>
+				<div id="tooltip" class="tooltip" hidden></div>
+				<div class="map-scala" aria-hidden="true">
+					<span class="map-scala-km"></span
+					><span class="map-scala-barra"></span>
+				</div>
+			</main>
+		</div>
 
-  <div id="debug" hidden>
-    <div class="debug-head">DEBUG <span>(D per chiudere)</span></div>
-    <pre id="debug-text"></pre>
-    <div class="debug-dev">
-      <button id="btn-console" type="button">apri console (C)</button>
-      <button id="btn-midi" type="button">collega MIDI</button>
-      <button id="btn-serial" type="button">collega seriale</button>
-      <div id="dev-status"></div>
-    </div>
-    <p class="hint">C console · T trattato · R reset · U uccisioni documentate · + − 0 zoom · F schermo intero · D debug</p>
-  </div>
+		<div id="debug" hidden>
+			<div class="debug-head">DEBUG <span>(D per chiudere)</span></div>
+			<pre id="debug-text"></pre>
+			<div class="debug-dev">
+				<button id="btn-console" type="button">apri console (C)</button>
+				<button id="btn-midi" type="button">collega MIDI</button>
+				<button id="btn-serial" type="button">collega seriale</button>
+				<div id="dev-status"></div>
+			</div>
+			<p class="hint">
+				C console · T trattato · R reset · U uccisioni documentate · + − 0 zoom
+				· F schermo intero · D debug
+			</p>
+		</div>
 
-  <script src="data/lessinia.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/util.js"></script>
-  <script src="js/input.js"></script>
-  <script src="js/link.js"></script>
-  <script src="js/simulation.js"></script>
-  <script src="js/territory.js"></script>
-  <script src="js/corridors.js"></script>
-  <script src="js/eventi.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/main.js"></script>
-</body>
+		<script src="data/lessinia.js"></script>
+		<script src="js/config.js"></script>
+		<script src="js/util.js"></script>
+		<script src="js/input.js"></script>
+		<script src="js/link.js"></script>
+		<script src="js/simulation.js"></script>
+		<script src="js/territory.js"></script>
+		<script src="js/corridors.js"></script>
+		<script src="js/eventi.js"></script>
+		<script src="js/render.js"></script>
+		<script src="js/ui.js"></script>
+		<script src="js/main.js"></script>
+	</body>
 </html>
