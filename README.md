@@ -3,9 +3,9 @@
 Prototipo di console multispecie su due pagine:
 
 - **`index.html`, la tavola**: copia di `reference interfaccia.png`. A sinistra la legenda, al centro la tavola dell'Alta Lessinia, a destra **NECESSITÀ** e **CONFLITTI**. In NECESSITÀ ci sono lo stato della convivenza, i fattori del territorio, i verbi e quattro quadranti (Risorse, Spazi, Limiti, Famiglia): sopra *Homo sapiens*, sotto *Canis lupus*. In CONFLITTI ci sono lo stato del conflitto, il grafico tempo × intensità, l'ultimo evento e il verbale.
-- **`console.html`, gli 8 slider**: 4 azioni di *Homo sapiens* (CONTROLLARE, CUSTODIRE, COSTRUIRE, ALLEVARE) e 4 comportamenti di *Canis lupus* (NUTRIRSI, ATTRAVERSARE, AVVICINARSI, RIPRODURSI). In installazione va su un secondo schermo.
+- **`console.html`, gli 8 slider**: 4 azioni di *Homo sapiens* (MONITORARE, PRESIDIARE, ABITARE, ALLEVARE) e 4 comportamenti di *Canis lupus* (NUTRIRSI, ATTRAVERSARE, AVVICINARSI, RIPRODURSI). In installazione va su un secondo schermo.
 
-- **`trattato.html`, il Trattato generativo**: l'Atto I. Il testo si modifica con gli stessi slider: la Voce la muovono ATTRAVERSARE, AVVICINARSI e RIPRODURSI; l'Inchiostro NUTRIRSI e ALLEVARE; la Barratura CONTROLLARE; la Riformulazione COSTRUIRE. Accanto alla colonna del ledwall c'è un banco che spiega che cosa modifica ogni slider. Decisioni e storia del prototipo sono in `trattato/docs/PROTOTIPO_ATTO1.md`, il testo integrale in `trattato/docs/TRATTATO.md`.
+- **`trattato.html`, il Trattato generativo**: l'Atto I. Il testo si modifica con gli stessi slider: la Voce la muovono ATTRAVERSARE, AVVICINARSI e RIPRODURSI; l'Inchiostro NUTRIRSI e ALLEVARE; la Barratura MONITORARE; la Riformulazione ABITARE. Accanto alla colonna del ledwall c'è un banco che spiega che cosa modifica ogni slider. Decisioni e storia del prototipo sono in `trattato/docs/PROTOTIPO_ATTO1.md`, il testo integrale in `trattato/docs/TRATTATO.md`.
 
 La simulazione gira nella tavola. La console le manda i gesti e riceve lo stato (`js/link.js`, BroadcastChannel).
 
@@ -55,7 +55,7 @@ Passando il mouse sulla tavola leggi la cella: uso del suolo, presenze, tipo di 
 ## Come funziona la negoziazione
 
 1. **Lo slider resta dove lo lasci.** Ogni slider ha un punto di riposo, l'*ancora*. Quando lo rilasci, l'ancora diventa la posizione in cui l'hai lasciato.
-2. **Gli altri rispondono.** Ogni slider che nessuno tiene va verso `ancora + somma delle spinte`. La spinta di A su B è `peso(A→B) × (A − 50)`, con i pesi della matrice in `js/config.js`. Esempio: CUSTODIRE a 10 spinge NUTRIRSI verso bovini e ovicaprini (mandrie e greggi incustodite) e CONTROLLARE in su (più animali uccisi, più richieste di abbattimento).
+2. **Gli altri rispondono.** Ogni slider che nessuno tiene va verso `ancora + somma delle spinte`. La spinta di A su B è `peso(A→B) × (A − 50)`, con i pesi della matrice in `js/config.js`. Esempio: PRESIDIARE a 10 spinge NUTRIRSI verso bovini e ovicaprini (mandrie e greggi incustodite) e MONITORARE in su (più animali uccisi, più richieste di abbattimento).
 3. **Si vede chi spinge chi.**
    - Sulla console, linee nere vanno dallo slider che spinge a quelli che rispondono. Lo spessore indica la forza della spinta, ▲/▼ la direzione.
    - Nel riquadro **Verbale**, nella colonna destra, c'è il motivo, in una frase.
@@ -80,16 +80,16 @@ Strade, sentieri, acque, isoipse (TINITALY), malghe e paesi sono vettori reali.
 
 **Cosa cambia con gli slider:**
 - **ALLEVARE**: sotto 55 i pascoli più lontani dalle malghe si abbandonano e diventano arbusteto. Sopra 55 il pascolo si allarga attorno alle malghe.
-- **COSTRUIRE**: sopra 45 i paesi crescono lungo le strade. Le strade locali più lontane dai paesi si chiudono quando COSTRUIRE scende (*ritirarsi*).
+- **ABITARE**: sopra 45 i paesi crescono lungo le strade. Le strade locali più lontane dai paesi si chiudono quando ABITARE scende (*ritirarsi*).
 - **Presenza di *Canis lupus*** (beige): è un campo continuo. Sale con il bosco e la quiete, scende vicino a paesi e strade, è attratta dai pascoli se NUTRIRSI tende a bovini e ovicaprini e mandrie e greggi sono incustodite. L'area mostrata cresce con il numero di lupi. Con RIPRODURSI basso diventa frammentata. AVVICINARSI riduce la distanza che il lupo tiene dai paesi.
 - **Presenza di *Homo sapiens*** (grigio): paesi, pascoli attivi e strade.
 - **Zone di conflitto** (rosso, l'unico colore d'accento). Sono di tre tipi:
   - *uccisioni di bovini e ovicaprini*: pascolo incustodito dentro la zona del lupo;
   - *margine delle contrade*: con AVVICINARSI alto;
-  - *trappola* (×): con CONTROLLARE sopra 50, vicino a pascoli e paesi.
+  - *trappola* (×): con MONITORARE sopra 50, vicino a pascoli e paesi.
 
   Dove il pascolo è custodito compare invece un segno senza conflitto registrato.
-- **Corridoi e attraversamenti**: cammini a costo minimo tra le aree di presenza del lupo e verso il bordo della tavola, tanti quanto dice ATTRAVERSARE. Ogni punto in cui una strada aperta taglia un corridoio o un'area del lupo è un attraversamento: *interrotto*, *trappola*, oppure *passaggio per altre specie* se CUSTODIRE è alto.
+- **Corridoi e attraversamenti**: cammini a costo minimo tra le aree di presenza del lupo e verso il bordo della tavola, tanti quanto dice ATTRAVERSARE. Ogni punto in cui una strada aperta taglia un corridoio o un'area del lupo è un attraversamento: *interrotto*, *trappola*, oppure *passaggio per altre specie* se PRESIDIARE è alto.
 - **Uccisioni documentate** (quadrati rossi con il numero di eventi): **dati reali**, non simulati. Vengono da Tabarelli de Fatis 2025 e MUSE–PAT 2023, tramite l'Atlante. Restano fissi e servono a confrontare la simulazione con quello che è successo.
 
 ## Rigenerare i dati o spostare la finestra
@@ -144,7 +144,7 @@ js/main.js              simulazione a 10 Hz, disegno a ogni frame
 
 ## Scelte di modellazione
 
-- **Memoria al posto dell'inerzia.** La versione precedente seguiva alla lettera `target = 50 + Σ W·(v−50)`: ALLEVARE e COSTRUIRE, che nessuno influenza, tornavano subito a 50 e la scelta sembrava rifiutata. Ora la scelta resta e viene riassorbita in minuti.
+- **Memoria al posto dell'inerzia.** La versione precedente seguiva alla lettera `target = 50 + Σ W·(v−50)`: ALLEVARE e ABITARE, che nessuno influenza, tornavano subito a 50 e la scelta sembrava rifiutata. Ora la scelta resta e viene riassorbita in minuti.
 - **Presenze, non animali.** Non ci sono simboli di lupi, pecore o cani. La presenza del lupo è un campo simulato e **non rappresenta territori reali**: i territori dei branchi non sono pubblicati, come nota l'Atlante.
 - **Bisogni.** Sono calcolati come prima, dagli slider. La tavola rende visibile dove si pagano, ma non li modifica, tranne `corridoiAperti`, che si misura sui corridoi della tavola.
 - **Calibrazioni ereditate** dalla prima versione: i pesi del cibo e della discendenza del lupo sono alzati per avere la stessa scala dell'umano; c'è un bonus bosco con branchi stabili.

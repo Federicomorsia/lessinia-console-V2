@@ -30,14 +30,14 @@
     { t: 'Dispersione',     v: 'dispersioneRiuscita', x: 1994, y: 729, w: 108, s: 2013 }
   ];
   const VERBI = [
-    { id: 'abbattere',   x: 2136, y: 228, alto: true },
-    { id: 'proteggere',  x: 2342, y: 227, alto: true },
-    { id: 'costruire',   x: 2136, y: 275, alto: true },
+    { id: 'monitorare',  x: 2136, y: 228, alto: true },
+    { id: 'presidiare',  x: 2342, y: 227, alto: true },
+    { id: 'abitare',     x: 2136, y: 275, alto: true },
     { id: 'allevare',    x: 2342, y: 275, alto: true },
-    { id: 'predare',     x: 2136, y: 682, alto: false },
-    { id: 'disperdersi', x: 2342, y: 681, alto: false },
+    { id: 'nutrirsi',    x: 2136, y: 682, alto: false },
+    { id: 'attraversare', x: 2342, y: 681, alto: false },
     { id: 'avvicinarsi', x: 2136, y: 729, alto: false },
-    { id: 'fareBranco',  x: 2342, y: 729, alto: false }
+    { id: 'riprodursi',  x: 2342, y: 729, alto: false }
   ];
   const H_SCATOLA = 35;
   const QUADRANTI = [
@@ -68,8 +68,8 @@
 
   // icona del verbale per slider che spinge
   const ICONA_VERBALE = {
-    allevare: 's-pascolo-rischio', proteggere: 's-pascolo-rischio', predare: 's-bestiame', abbattere: 's-ucciso',
-    costruire: 's-conteso', disperdersi: 's-conteso', avvicinarsi: 's-trappola', fareBranco: 's-conteso'
+    allevare: 's-pascolo-rischio', presidiare: 's-pascolo-rischio', nutrirsi: 's-bestiame', monitorare: 's-ucciso',
+    abitare: 's-conteso', attraversare: 's-conteso', avvicinarsi: 's-trappola', riprodursi: 's-conteso'
   };
   const ICONA_EVENTO = { bestiame: 's-bestiame', ucciso: 's-ucciso', conteso: 's-conteso', trappola: 's-trappola' };
 

@@ -7,7 +7,7 @@
      che li riceve dalla console (console.html), attraverso DN.link;
    - niente negoziazione automatica né riposo: la memoria degli slider è
      quella del dispositivo;
-   - la riformulazione la muove COSTRUIRE (invertito), non più CUSTODIRE:
+   - la riformulazione la muove ABITARE (invertito), non più PRESIDIARE:
      vedi trattato/docs/PROTOTIPO_ATTO1.md §3;
    - il testo usa Homo sapiens e Canis lupus (LESSICO_TRATTATO.md §4.2);
    - accanto alla colonna, un banco che dice che cosa modifica il testo.
@@ -135,24 +135,23 @@
   barrabili.forEach((g) => g.forEach((w) => w.el.classList.add('barrabile')));
 
   /* ---------- slider: dal dispositivo ---------- */
-  // id della console → nomi brevi del prototipo
-  const vals = { allevare: 50, costruire: 50, proteggere: 50, abbattere: 50, predare: 50, disperdersi: 50, avvicinarsi: 50, branco: 50 };
-  const DA_CONSOLE = { fareBranco: 'branco' };
+  // stessi id della console (js/config.js SLIDERS)
+  const vals = { allevare: 50, abitare: 50, presidiare: 50, monitorare: 50, nutrirsi: 50, attraversare: 50, avvicinarsi: 50, riprodursi: 50 };
   let ultimoStato = -1e9;
   const canale = new DN.link.Canale((m) => {
     if (!m || m.t !== 'stato' || !m.values) return;
     ultimoStato = performance.now();
-    for (const id in m.values) vals[DA_CONSOLE[id] || id] = m.values[id];
+    for (const id in m.values) vals[id] = m.values[id];
   });
 
   /* Le quattro modifiche, ognuna con una sola causa */
   function derive(v) {
     const d = (k) => (v[k] - 50) / 50, P = (k) => Math.max(0, d(k));
     return {
-      v: clamp((d('disperdersi') + d('avvicinarsi') + d('branco')) / 3, -1, 1),  // voce: presenza di Canis lupus
-      c: clamp((P('predare') + P('allevare')) / 2, 0, 1),                        // inchiostro: conflitto sul pascolo
-      B: d('abbattere'),                                                         // barratura: CONTROLLARE
-      r: -d('costruire')                                                         // riformulazione: COSTRUIRE invertito
+      v: clamp((d('attraversare') + d('avvicinarsi') + d('riprodursi')) / 3, -1, 1),  // voce: presenza di Canis lupus
+      c: clamp((P('nutrirsi') + P('allevare')) / 2, 0, 1),                        // inchiostro: conflitto sul pascolo
+      B: d('monitorare'),                                                         // barratura: MONITORARE
+      r: -d('abitare')                                                         // riformulazione: ABITARE invertito
     };
   }
   const fmt = (v, sign = 1) => { const s = Math.abs(v).toFixed(2).replace('.', ','); return sign ? (v >= 0 ? '+' : '−') + s : s; };
@@ -239,26 +238,26 @@
   }
 
   /* ---------- banco: che cosa modifica il testo ---------- */
-  const v2 = (id) => Math.round(id === 'branco' ? vals.branco : vals[id]);
+  const v2 = (id) => Math.round(vals[id]);
   const MODS = [
     { id: 'voce', nome: 'Voce',
       cosa: 'In ogni articolo una parte è in nero pieno: è la protesta della Delegazione. Il confine scorre lento e taglia anche le parole.',
-      cause: [['disperdersi', 'lupo'], ['avvicinarsi', 'lupo'], ['branco', 'lupo']], op: 'media',
+      cause: [['attraversare', 'lupo'], ['avvicinarsi', 'lupo'], ['riprodursi', 'lupo']], op: 'media',
       regola: 'Più presenza di <i>Canis lupus</i> sul territorio, più forza alla protesta. Quando la presenza cala, la protesta arretra in grigio ma resta leggibile.',
       barra: 'div' },
     { id: 'inchiostro', nome: 'Inchiostro',
       cosa: 'Le parole degli strumenti della caccia si gonfiano e si impastano. Al massimo una parola su undici.',
-      cause: [['predare', 'lupo'], ['allevare', 'umano']], op: 'insieme sopra 50',
+      cause: [['nutrirsi', 'lupo'], ['allevare', 'umano']], op: 'insieme sopra 50',
       regola: 'Il conflitto sul pascolo sporca il testo. Nessuno lo decide: accade. Quando il conflitto cala, l\'inchiostro asciuga lentamente.',
       barra: 'soglia', soglia: 12 },
     { id: 'barratura', nome: 'Barratura',
       cosa: 'Una linea netta cancella le menzioni di <i>Canis lupus</i>, delle femmine e dei cuccioli. In Art. 2 «individuo in disaccordo» viene barrato e «nocivo» torna pieno.',
-      cause: [['abbattere', 'umano']], op: 'oltre 60',
+      cause: [['monitorare', 'umano']], op: 'oltre 60',
       regola: 'Cancellazione deliberata: il testo ripete ciò che l\'Atto denuncia. Tratto netto, perché qui qualcuno decide.',
       barra: 'soglia', soglia: 60 },
     { id: 'riformulazione', nome: 'Riformulazione',
       cosa: 'I passaggi tra [ ] si cancellano e si riscrivono lettera per lettera. La formulazione precedente resta accanto, piccola e barrata.',
-      cause: [['costruire', 'umano']], op: 'invertito',
+      cause: [['abitare', 'umano']], op: 'invertito',
       regola: 'Chi si insedia difende l\'occupazione della montagna e parla per eufemismi («la rimozione»): la Delegazione insiste con clausole nuove. Chi si ritira riconosce («lo sterminio deliberato»).',
       barra: 'div' }
   ];
@@ -266,7 +265,7 @@
   MODS.forEach((m) => {
     const e = mk('section', 'mod');
     e.dataset.mod = m.id;
-    const cause = m.cause.map(([id, chi]) => `<span class="verbo ${chi}" data-v="${id}"><b>50</b>${NOMI[id === 'branco' ? 'fareBranco' : id]}</span>`).join('');
+    const cause = m.cause.map(([id, chi]) => `<span class="verbo ${chi}" data-v="${id}"><b>50</b>${NOMI[id]}</span>`).join('');
     e.innerHTML = `
       <div class="mod-testa"><span class="mod-nome">${m.nome}</span><span class="mod-stato">ferma</span></div>
       <p class="mod-cosa">${m.cosa}</p>
@@ -282,7 +281,7 @@
     e.addEventListener('mouseleave', () => { if (!e.classList.contains('fissa')) body.classList.remove('hl-' + m.id); });
     e.addEventListener('click', () => { const on = e.classList.toggle('fissa'); body.classList.toggle('hl-' + m.id, on); });
   });
-  $('#nonagisce').innerHTML = `<b>${NOMI.proteggere}</b> non agisce su questo Atto.`;
+  $('#nonagisce').innerHTML = `<b>${NOMI.presidiare}</b> non agisce su questo Atto.`;
   const attiva = (id) => { UI[id].attivaT = T; };
 
   // registro delle modifiche, la più recente in alto
@@ -292,7 +291,7 @@
     registro.length = Math.min(registro.length, 12);
     $('#registro').innerHTML = registro.map((r) => `<li>${r.html}${r.causa ? ` <span>· ${r.causa}</span>` : ''}</li>`).join('');
   }
-  const causa = (...ids) => ids.map((id) => `${NOMI[id === 'branco' ? 'fareBranco' : id]} ${v2(id)}`).join(', ');
+  const causa = (...ids) => ids.map((id) => `${NOMI[id]} ${v2(id)}`).join(', ');
 
   /* ---------- ciclo ---------- */
   let inchiostroVa = null, ultimaVoce = null;
@@ -325,7 +324,7 @@
     // barratura
     const prima = cutting;
     if (S.B > 0.2) cutting = true; else if (S.B < 0.12) cutting = false;
-    if (cutting !== prima) scrivi(cutting ? `<b>Barratura avviata</b>: le menzioni di <i>Canis lupus</i> vengono cancellate` : '<b>Barratura sospesa</b>: le linee restano finché lo slider non scende', causa('abbattere'));
+    if (cutting !== prima) scrivi(cutting ? `<b>Barratura avviata</b>: le menzioni di <i>Canis lupus</i> vengono cancellate` : '<b>Barratura sospesa</b>: le linee restano finché lo slider non scende', causa('monitorare'));
     const nCut = cutting ? Math.round(clamp((S.B - 0.15) / 0.7, 0, 1) * barrabili.length * 0.75) : 0;
     let tagliate = 0;
     barrabili.forEach((g, i) => { const on = i < nCut; if (on) tagliate++; g.forEach((w) => { if (w.el.classList.contains('cut') !== on) { w.el.classList.toggle('cut', on); attiva('barratura'); } }); });
@@ -338,7 +337,7 @@
         if (h.pend !== want) { h.pend = want; h.pendT = T; }
         else if (T - h.pendT >= 2.5) {
           const old = d.opts[h.idx]; h.idx = want; h.pend = null; h.changedAt = T; h.gh.textContent = testo(old); h.ghBorn = T; retype(h, d.opts[want]);
-          scrivi(`<b>Art. ${d.art}</b> «${old}» → «${d.opts[want]}»`, causa('costruire'));
+          scrivi(`<b>Art. ${d.art}</b> «${old}» → «${d.opts[want]}»`, causa('abitare'));
         }
       } else h.pend = null;
       if (scrive(h)) attiva('riformulazione');
@@ -355,7 +354,7 @@
           h.on = want; h.pend = null; h.changedAt = T;
           if (want) { h.el.className = 'add'; h.cur.textContent = ''; retype(h, a.text); } else h.el.className = 'add is-gone';
           gloss(h, GLOSS[want ? 'add:on' : 'add:off']);
-          scrivi(`<b>Art. ${a.art}</b> clausola ${want ? 'inserita' : 'ritirata'}: «${a.text}»`, causa('costruire'));
+          scrivi(`<b>Art. ${a.art}</b> clausola ${want ? 'inserita' : 'ritirata'}: «${a.text}»`, causa('abitare'));
         }
       } else h.pend = null;
       if (scrive(h)) attiva('riformulazione');
@@ -368,7 +367,7 @@
         if (h.pend !== want) { h.pend = want; h.pendT = T; }
         else if (T - h.pendT >= 2.5) {
           h.st = want; h.pend = null; h.el.className = 'cp st-' + want; gloss(h, GLOSS[id + ':' + want]); attiva('barratura');
-          if (id === 'nocivo') scrivi(want === 'ripristinato' ? '<b>Art. 2</b> «individuo in disaccordo» barrato, «nocivo» torna pieno' : '<b>Art. 2</b> torna la proposta «individuo in disaccordo»', causa('abbattere'));
+          if (id === 'nocivo') scrivi(want === 'ripristinato' ? '<b>Art. 2</b> «individuo in disaccordo» barrato, «nocivo» torna pieno' : '<b>Art. 2</b> torna la proposta «individuo in disaccordo»', causa('monitorare'));
         }
       } else h.pend = null;
     }
@@ -376,10 +375,10 @@
 
     // inchiostro e voce nel registro, solo ai cambi di direzione
     const va = S.c > 0.12;
-    if (inchiostroVa !== null && va !== inchiostroVa) scrivi(va ? '<b>Inchiostro</b>: il conflitto sul pascolo macchia le parole della caccia' : '<b>Inchiostro</b>: il conflitto cala, le macchie asciugano', causa('predare', 'allevare'));
+    if (inchiostroVa !== null && va !== inchiostroVa) scrivi(va ? '<b>Inchiostro</b>: il conflitto sul pascolo macchia le parole della caccia' : '<b>Inchiostro</b>: il conflitto cala, le macchie asciugano', causa('nutrirsi', 'allevare'));
     inchiostroVa = va;
     const vs = S.v > 0.1 ? 1 : S.v < -0.1 ? -1 : 0;
-    if (ultimaVoce !== null && vs !== ultimaVoce) scrivi(vs > 0 ? '<b>Voce</b>: la protesta avanza in nero pieno' : vs < 0 ? '<b>Voce</b>: la protesta arretra in grigio' : '<b>Voce</b>: la protesta torna a metà', causa('disperdersi', 'avvicinarsi', 'branco'));
+    if (ultimaVoce !== null && vs !== ultimaVoce) scrivi(vs > 0 ? '<b>Voce</b>: la protesta avanza in nero pieno' : vs < 0 ? '<b>Voce</b>: la protesta arretra in grigio' : '<b>Voce</b>: la protesta torna a metà', causa('attraversare', 'avvicinarsi', 'riprodursi'));
     ultimaVoce = vs;
 
     // banco
@@ -391,7 +390,7 @@
       riformulazione: `Indice ${fmt(S.r)} · Art. 1 <q>${SLOTS.a1.opts[H.a1.idx]}</q> · Art. 4 <q>${SLOTS.a4.opts[H.a4.idx]}</q> · clausole ${['parte', 'debito'].filter((k) => H[k].on).length} su 2.`
     };
     const barre = {
-      voce: [S.v, true], inchiostro: [S.c, false], barratura: [vals.abbattere / 100, false], riformulazione: [S.r, true]
+      voce: [S.v, true], inchiostro: [S.c, false], barratura: [vals.monitorare / 100, false], riformulazione: [S.r, true]
     };
     MODS.forEach((m) => {
       const u = UI[m.id];

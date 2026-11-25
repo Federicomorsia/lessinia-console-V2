@@ -4,7 +4,7 @@
    ogni cella (OpenStreetMap). Sopra, il territorio cambia con gli slider:
    - ALLEVARE: i pascoli lontani dalle malghe si abbandonano (diventano
      arbusteto) o, al contrario, il pascolo si allarga attorno alle malghe;
-   - COSTRUIRE: i paesi crescono lungo le strade, le strade locali si aprono
+   - ABITARE: i paesi crescono lungo le strade, le strade locali si aprono
      o si chiudono;
    - presenza del lupo: un campo continuo (bosco, quiete, distanza da paesi
      e strade, richiamo dei pascoli) di cui si mostra la parte più alta;
@@ -165,7 +165,7 @@
     update(stato, v, dt) {
       const C = this.cfg.TERRITORIO;
       this.t += dt;
-      const a = v.allevare, c = v.costruire;
+      const a = v.allevare, c = v.abitare;
       const target = {
         abbandono: a < C.PASCOLO_SOGLIA ? this.prateriaTot * C.ABBANDONO_MAX * (C.PASCOLO_SOGLIA - a) / C.PASCOLO_SOGLIA : 0,
         espansione: a > C.PASCOLO_SOGLIA ? this.espMax * (a - C.PASCOLO_SOGLIA) / (100 - C.PASCOLO_SOGLIA) : 0,
@@ -186,7 +186,7 @@
       // le presenze si ricalcolano solo quando cambia qualcosa che le muove
       const q = (x) => Math.round(x * 4);
       const pk = this.version + '|' + q(stato.territorio.lupi) + '|' +
-        ['avvicinarsi', 'predare', 'proteggere', 'abbattere', 'fareBranco'].map((k) => q(v[k])).join(',');
+        ['avvicinarsi', 'nutrirsi', 'presidiare', 'monitorare', 'riprodursi'].map((k) => q(v[k])).join(',');
       if (pk !== this._presKey) {
         this._presKey = pk;
         this._presenze(stato, v);
@@ -224,13 +224,13 @@
     /* presenza del lupo, presenza umana, conflitti */
     _presenze(stato, v) {
       const C = this.cfg.TERRITORIO, W = this.W, H = this.H, N = this.N, cls = this.cls;
-      const avv = v.avvicinarsi / 100, pr = v.predare / 100, prot = v.proteggere / 100;
-      const abb = v.abbattere / 100, fb = v.fareBranco / 100;
+      const avv = v.avvicinarsi / 100, pr = v.nutrirsi / 100, prot = v.presidiare / 100;
+      const abb = v.monitorare / 100, fb = v.riprodursi / 100;
       const Ra = C.EVITA_PAESI_CELLE * (1 - 0.75 * avv) + 0.6;
       const Rr = C.EVITA_STRADE_CELLE * (1 - 0.6 * avv) + 0.4;
       // il richiamo dei pascoli: se il lupo preda il domestico e le greggi sono scoperte
       const richiamo = 0.45 * pr * (1 - 0.7 * prot);
-      // FARE BRANCO basso: presenza frammentata (rumore fisso: la mappa non si muove da sola)
+      // RIPRODURSI basso: presenza frammentata (rumore fisso: la mappa non si muove da sola)
       const frag = (1 - fb) * 0.5;
       const campo = new Float32Array(N);
       const vals = [];

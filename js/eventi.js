@@ -66,7 +66,7 @@
       const p = {
         bestiame: 0.55 * r(st.predazione || 0, 40),
         margine: 0.35 * r(st.margine || 0, 60),
-        ucciso: (v.abbattere > 50 ? 0.3 * (v.abbattere - 50) / 50 : 0) + 0.2 * r(st.trappola || 0, 60),
+        ucciso: (v.monitorare > 50 ? 0.3 * (v.monitorare - 50) / 50 : 0) + 0.2 * r(st.trappola || 0, 60),
         strada: 0.18 * s.mortalitaStradale / 100,
         conteso: 0.15 * ((cs.conteso || 0) + (cs.interrotto || 0)) / 100,
         trappola: 0.15 * (cs.trappola || 0) / 100

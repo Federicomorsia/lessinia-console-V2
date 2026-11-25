@@ -94,11 +94,11 @@
         base[i] = c * (1 + 0.6 * U.hash2(i, 0, 5));
       }
       // pressione di abbattimento: vicino a pascoli e paesi
-      const pressione = (i) => (v.abbattere / 100) * Math.exp(-Math.min(T.dAb[i], T.dPascolo[i]) / C.RAGGIO_PRESSIONE);
+      const pressione = (i) => (v.monitorare / 100) * Math.exp(-Math.min(T.dAb[i], T.dPascolo[i]) / C.RAGGIO_PRESSIONE);
 
       // --- aree di presenza come sorgenti -----------------------------------
       const { gruppi, id: mem } = T.gruppi(10);
-      const nDraw = gruppi.length ? Math.round((v.disperdersi / 100) * C.MAX_PERCORSI) : 0;
+      const nDraw = gruppi.length ? Math.round((v.attraversare / 100) * C.MAX_PERCORSI) : 0;
       const nCalc = gruppi.length ? Math.max(nDraw, C.MIN_MISURA) : 0;
       const mete = gruppi.map((g) => ({ x: g.x, y: g.y, idx: g.idx, gruppo: g.id })).concat(T.meteBordo);
       const usate = new Set();
@@ -154,20 +154,20 @@
         }
       }
       const nuovi = new Set();
-      if (v.proteggere >= C.SOGLIA_PASSAGGI) {
-        const frac = U.clamp((v.proteggere - C.SOGLIA_PASSAGGI) / (90 - C.SOGLIA_PASSAGGI), 0, 1);
+      if (v.presidiare >= C.SOGLIA_PASSAGGI) {
+        const frac = U.clamp((v.presidiare - C.SOGLIA_PASSAGGI) / (90 - C.SOGLIA_PASSAGGI), 0, 1);
         const ord = runs.slice().sort((a, b) => U.hash2(a.celle[0], 3, 9) - U.hash2(b.celle[0], 3, 9));
         ord.slice(0, Math.ceil(frac * ord.length)).forEach((r) => r.celle.forEach((i) => nuovi.add(i)));
       }
       this.passaggi = nuovi;
 
       // --- classificazione dei tratti ------------------------------------------
-      const pr = v.proteggere, al = v.allevare;
+      const pr = v.presidiare, al = v.allevare;
       const stato = (i) => {
         const k = cls[i];
         if ((sr[i] && !nuovi.has(i)) || k === K.ABITATO) return 'interrotto';
         const pascolo = k === K.PRATERIA;
-        if (pascolo && al >= C.SOGLIA_CONTESO_ALLEVARE && pr < C.SOGLIA_CONTESO_PROTEGGERE) return 'conteso';
+        if (pascolo && al >= C.SOGLIA_CONTESO_ALLEVARE && pr < C.SOGLIA_CONTESO_PRESIDIARE) return 'conteso';
         if (pressione(i) > C.SOGLIA_TRAPPOLA) return 'trappola';
         if (pascolo && pr >= C.SOGLIA_TOLLERATO) return 'tollerato';
         return 'aperto';

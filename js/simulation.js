@@ -15,38 +15,38 @@
                      misurata sulla mappa dal modulo corridors.
      ------------------------------------------------------------------- */
   function calcolaStato(v, corridoiAperti) {
-    const { allevare, costruire, proteggere, abbattere, predare, disperdersi, avvicinarsi, fareBranco } = v;
+    const { allevare, abitare, presidiare, monitorare, nutrirsi, attraversare, avvicinarsi, riprodursi } = v;
     const s = {};
 
     // --- territorio ---------------------------------------------------
     s.pascolo = c(15 + 0.70 * allevare);            // più bestiame, più pascolo
-    s.infrastrutture = c(costruire);
-    s.lupi = c(0.6 * fareBranco + 0.2 * disperdersi - 0.5 * abbattere + 35);
+    s.infrastrutture = c(abitare);
+    s.lupi = c(0.6 * riprodursi + 0.2 * attraversare - 0.5 * monitorare + 35);
     // Bonus opzionale: branchi stabili che cacciano il selvatico tengono
     // basso il carico di ungulati e il bosco si rinnova.
-    s.bonusBosco = 8 * (s.lupi / 100) * (1 - predare / 100) * (fareBranco / 100);
+    s.bonusBosco = 8 * (s.lupi / 100) * (1 - nutrirsi / 100) * (riprodursi / 100);
     s.bosco = c(100 - 0.6 * s.pascolo - 0.35 * s.infrastrutture + s.bonusBosco);
     // il presidio non aumenta le greggi, ma le rende più al sicuro e quindi più durature
-    s.greggi = c(allevare * (0.6 + 0.4 * proteggere / 100));
-    // abbattere toglie lupi e quindi lascia crescere cervi, caprioli, cinghiali
-    s.ungulati = c(40 + 0.4 * s.bosco - 0.5 * s.lupi * (1 - predare / 100) + 0.3 * abbattere);
-    s.cani = c(0.5 * proteggere + 0.3 * costruire);  // guardiania + cani vaganti
+    s.greggi = c(allevare * (0.6 + 0.4 * presidiare / 100));
+    // monitorare toglie lupi e quindi lascia crescere cervi, caprioli, cinghiali
+    s.ungulati = c(40 + 0.4 * s.bosco - 0.5 * s.lupi * (1 - nutrirsi / 100) + 0.3 * monitorare);
+    s.cani = c(0.5 * presidiare + 0.3 * abitare);  // guardiania + cani vaganti
     // lupi soli, vicini ai paesi, dove ci sono cani: aumenta l'ibridazione
-    s.ibridazione = c(avvicinarsi * (s.cani / 100) * (1 - fareBranco / 100) * 1.5);
+    s.ibridazione = c(avvicinarsi * (s.cani / 100) * (1 - riprodursi / 100) * 1.5);
 
     // --- variabili di supporto ----------------------------------------
     s.corridoiAperti = c(corridoiAperti);
-    s.conflitto = c(0.4 * predare * s.greggi / 100 + 0.3 * avvicinarsi + 0.3 * abbattere);
-    s.mortalitaStradale = c(s.infrastrutture * disperdersi / 100);
-    s.dispersioneRiuscita = c(disperdersi * s.corridoiAperti / 100);
+    s.conflitto = c(0.4 * nutrirsi * s.greggi / 100 + 0.3 * avvicinarsi + 0.3 * monitorare);
+    s.mortalitaStradale = c(s.infrastrutture * attraversare / 100);
+    s.dispersioneRiuscita = c(attraversare * s.corridoiAperti / 100);
 
     // --- bisogni dell'umano -------------------------------------------
     const um = {};
-    um.cibo = c(0.5 * s.greggi + 0.3 * (100 - s.ungulati) + 0.2 * (100 - predare * allevare / 100));
+    um.cibo = c(0.5 * s.greggi + 0.3 * (100 - s.ungulati) + 0.2 * (100 - nutrirsi * allevare / 100));
     um.spazio = c(0.6 * s.infrastrutture + 0.4 * s.pascolo);
-    um.sicurezza = c(100 - (0.4 * predare * s.greggi / 100 + 0.3 * avvicinarsi + 0.3 * s.ungulati * s.infrastrutture / 100));
+    um.sicurezza = c(100 - (0.4 * nutrirsi * s.greggi / 100 + 0.3 * avvicinarsi + 0.3 * s.ungulati * s.infrastrutture / 100));
     // continuità delle comunità e del mestiere
-    um.discendenza = c(0.4 * um.cibo + 0.3 * (100 - s.conflitto) + 0.3 * proteggere);
+    um.discendenza = c(0.4 * um.cibo + 0.3 * (100 - s.conflitto) + 0.3 * presidiare);
 
     // --- bisogni del lupo ---------------------------------------------
     // Calibrazione (vedi README): i pesi originali 0.6 / 0.4 tenevano il cibo
@@ -54,11 +54,11 @@
     // Qui: dieta = quota selvatica × disponibilità di ungulati
     //            + quota domestica × greggi accessibili (non presidiate).
     const lu = {};
-    lu.cibo = c(1.0 * s.ungulati * (1 - predare / 100) + 1.2 * s.greggi * (predare / 100) * (1 - proteggere / 100));
+    lu.cibo = c(1.0 * s.ungulati * (1 - nutrirsi / 100) + 1.2 * s.greggi * (nutrirsi / 100) * (1 - presidiare / 100));
     lu.spazio = c(0.5 * s.bosco + 0.5 * s.corridoiAperti - 0.3 * s.infrastrutture);
-    lu.sicurezza = c(100 - (0.5 * abbattere + 0.3 * s.mortalitaStradale + 0.2 * avvicinarsi * abbattere / 100));
+    lu.sicurezza = c(100 - (0.5 * monitorare + 0.3 * s.mortalitaStradale + 0.2 * avvicinarsi * monitorare / 100));
     // Calibrazione: 0.5 / 0.3 -> 0.6 / 0.4 per la stessa ragione di scala.
-    lu.discendenza = c(0.6 * fareBranco + 0.4 * s.dispersioneRiuscita - 0.4 * s.ibridazione);
+    lu.discendenza = c(0.6 * riprodursi + 0.4 * s.dispersioneRiuscita - 0.4 * s.ibridazione);
 
     return { territorio: s, umano: um, lupo: lu };
   }
